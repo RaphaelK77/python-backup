@@ -9,6 +9,8 @@ import tkinter.messagebox
 import vars as v
 from tkinter import *
 import ttkbootstrap as ttks
+import requests
+import webbrowser
 
 source_dir = r"E:\Dateien\Documents\Python\pythonBackup\source"
 destination_dir = r"E:\Dateien\Documents\Python\pythonBackup\destination"
@@ -644,6 +646,37 @@ def initialize():
     forbidden_path_file_handler.close()
 
 
+class UpdateWindow:
+    def __init__(self, master, latest_version):
+        self.master = master
+
+        self.master.columnconfigure(0, weight=1)
+        self.master.rowconfigure(0, weight=1)
+
+        self.frame = Frame(self.master, padx=30, pady=20)
+        self.frame.grid(row=0, column=0, sticky="NSEW")
+
+        self.label = ttk.Label(self.frame, text="There is a new update available. The current version is {}, the latest version is {}. ".format(v.current_version, latest_version))
+        self.label.grid(row=0, column=0, columnspan=2, sticky="NSEW")
+
+        self.update_button = ttk.Button(self.frame, text="Update", style="success.TButton", command=lambda: webbrowser.open("https://github.com/RaphaelK77/python-backup/releases"))
+        self.update_button.grid(row=1, column=0)
+
+        self.close_button = ttk.Button(self.frame, text="Later", style="warning.TButton", command=self.master.destroy)
+        self.close_button.grid(row=1, column=1)
+
+
+def check_for_updates():
+    # check for new version
+    latest_version = requests.get("https://api.github.com/repos/RaphaelK77/python-backup/releases/latest").json()["tag_name"]
+    if v.current_version != latest_version:
+        update_window = Toplevel(v.root)
+        update_window.title("New Update")
+        UpdateWindow(update_window, latest_version)
+    else:
+        logger.info("Version up to date.")
+
+
 if __name__ == '__main__':
     initialize()
 
@@ -659,6 +692,8 @@ if __name__ == '__main__':
     v.loaded_config = read_config(v.default_config_file)
 
     main_page = MainPage(v.root)
+
+    check_for_updates()
 
     check_remaining_files()
 
