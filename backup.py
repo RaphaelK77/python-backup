@@ -405,7 +405,7 @@ class FolderWindow:
         self.master = master
         self.frame = Frame(self.master)
         self.frame.pack(fill="both", expand=True)
-        self.frame.grid(row=1, column=0, sticky="nsew")
+        self.frame.grid(row=0, column=0, sticky="NSEW", padx=50, pady=50)
         self.master.wm_attributes("-topmost", True)
 
         self.src_field = None
@@ -441,12 +441,12 @@ class FolderWindow:
         self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy, style="danger.Outline.TButton")
         self.close_button.grid(column=1, row=self.next_row)
 
-        for column in range(0, 2):
-            self.master.columnconfigure(column, weight=1)
-            self.frame.columnconfigure(column, weight=1)
-        for row in range(0, self.next_row + 1):
-            self.master.rowconfigure(row, weight=1)
-            self.frame.rowconfigure(row, weight=1)
+        self.master.columnconfigure(0, weight=1)
+        self.master.rowconfigure(0, weight=1)
+
+        self.frame.columnconfigure([i for i in range(3)], weight=1)
+        self.frame.rowconfigure(1, weight=1)
+        self.frame.rowconfigure([i for i in range(1, self.next_row)], weight=3)
 
     def add_folder(self):
         self.add_button.destroy()
