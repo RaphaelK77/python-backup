@@ -298,9 +298,13 @@ class ConfigDescriptionWindow:
 class ConfigWindow:
     def __init__(self, master):
         self.master = master
+
+        self.master.rowconfigure(0, weight=1)
+        self.master.columnconfigure(0, weight=1)
+
         self.frame = Frame(self.master)
-        self.frame.pack(fill="both", expand=True)
-        self.frame.grid(row=1, column=0, sticky="nsew")
+        self.frame.grid(row=0, column=0, padx=50, pady=50, sticky="NSEW")
+
         self.master.wm_attributes("-topmost", True)
         self.next_row = 1
 
@@ -339,10 +343,13 @@ class ConfigWindow:
         self.new_button = ttk.Button(self.frame, text="New Configuration", command=self.new_config, style="success.TButton")
         self.new_button.grid(column=0, row=self.next_row, sticky="NSEW")
 
-        self.close_button = Button(self.frame, text="Close", command=self.master.destroy)
+        self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy, style="danger.Outline.TButton")
         self.close_button.grid(column=2, row=self.next_row, sticky="NSEW")
 
         self.new_name_entry = Entry(self.frame)
+
+        self.frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        self.frame.rowconfigure([i for i in range(self.next_row)], weight=1)
 
     def delete_config(self, config):
         config_path = config + ".ini"
@@ -431,7 +438,7 @@ class FolderWindow:
         self.add_button = ttk.Button(self.frame, text="+", command=self.add_folder, style="success.TButton")
         self.add_button.grid(column=0, row=self.next_row)
 
-        self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy)
+        self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy, style="danger.Outline.TButton")
         self.close_button.grid(column=1, row=self.next_row)
 
         for column in range(0, 2):
@@ -578,7 +585,7 @@ class IntervalWindow:
 class MainPage:
     def __init__(self, master):
         self.master = master
-        self.frame = Frame(self.master)
+        self.frame = Frame(self.master, padx=30, pady=20)
 
         self.config_file = Entry(self.frame, textvariable=v.loaded_config_file)
         self.config_file.pack(fill="both", expand=True, padx=20, pady=20)
