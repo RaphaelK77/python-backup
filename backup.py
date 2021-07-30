@@ -8,6 +8,7 @@ from tkinter import ttk
 import tkinter.messagebox
 import vars as v
 from tkinter import *
+import ttkbootstrap as ttks
 
 source_dir = r"E:\Dateien\Documents\Python\pythonBackup\source"
 destination_dir = r"E:\Dateien\Documents\Python\pythonBackup\destination"
@@ -583,13 +584,14 @@ class MainPage:
         self.folders_button = Button(self.frame, text="Folders", command=self.open_folder_window)
         self.folders_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.sync_button = Button(self.frame, text="Synchronize Now", command=start_sync)
-        self.sync_button.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.interval_button = Button(self.frame, text="Set Update Interval", command=self.open_interval_window)
         self.interval_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.close = Button(self.frame, text="Quit", command=v.root.destroy)
+        self.sync_button = ttk.Button(self.frame, text="Synchronize Now", command=start_sync, style="success.TButton")
+        self.sync_button.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.close = ttk.Button(self.frame, text="Quit", command=v.root.destroy, style="danger.TButton")
         self.close.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.remaining = Entry(self.frame, textvariable=v.remaining_files)
@@ -632,7 +634,8 @@ def initialize():
 if __name__ == '__main__':
     initialize()
 
-    v.root = Tk()
+    style = ttks.Style(theme="cosmo")
+    v.root = style.master
     v.root.title("Backup")
     v.root.geometry("600x800")
 
