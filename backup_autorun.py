@@ -1,13 +1,13 @@
-import backup
-import vars as v
-from tkinter import *
-from tkinter import ttk
+import logging
 from datetime import date
 from datetime import datetime
-from win10toast import ToastNotifier
-import logging
-import plyer.platforms.win.notification
+from tkinter import *
+from tkinter import ttk
+
 from plyer import notification
+
+import backup
+import vars as v
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
