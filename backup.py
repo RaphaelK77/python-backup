@@ -317,11 +317,11 @@ class ConfigWindow:
             name_label.grid(column=0, row=self.next_row, sticky="NSEW")
             interval_label = Label(self.frame, text=read_interval_from_config(config), anchor="center")
             interval_label.grid(column=1, row=self.next_row, sticky="NSEW")
-            load_button = Button(self.frame, text="load", command=lambda c=config: self.load_config(c))
+            load_button = ttk.Button(self.frame, text="load", command=lambda c=config: self.load_config(c))
             load_button.grid(column=2, row=self.next_row, sticky="NSEW")
-            delete_button = Button(self.frame, text="delete", command=lambda c=config: self.delete_config(c))
+            delete_button = ttk.Button(self.frame, text="delete", command=lambda c=config: self.delete_config(c), style="danger.TButton")
             delete_button.grid(column=3, row=self.next_row, sticky="NSEW")
-            description_button = Button(self.frame, text="description", command=lambda c=config: self.open_config_description_window(c))
+            description_button = ttk.Button(self.frame, text="description", command=lambda c=config: self.open_config_description_window(c), style="info.TButton")
             description_button.grid(column=4, row=self.next_row, sticky="NSEW")
             if config == "config":
                 delete_button["state"] = "disabled"
@@ -329,7 +329,7 @@ class ConfigWindow:
 
         Label(self.frame, text="").grid(column=0, row=self.next_row)
         self.next_row += 1
-        self.new_button = Button(self.frame, text="New Configuration", command=self.new_config)
+        self.new_button = ttk.Button(self.frame, text="New Configuration", command=self.new_config, style="success.TButton")
         self.new_button.grid(column=0, row=self.next_row, sticky="NSEW")
 
         self.close_button = Button(self.frame, text="Close", command=self.master.destroy)
@@ -417,11 +417,11 @@ class FolderWindow:
             src_label.grid(column=0, row=self.next_row, sticky="NSEW")
             dst_label = ttk.Label(self.frame, text=dst, anchor="center")
             dst_label.grid(column=2, row=self.next_row, sticky="NSEW")
-            remove_button = ttk.Button(self.frame, text="X", command=lambda s=src, d=dst: self.remove_src_dst(s, d))
+            remove_button = ttk.Button(self.frame, text="X", command=lambda s=src, d=dst: self.remove_src_dst(s, d), style="danger.TButton")
             remove_button.grid(column=3, row=self.next_row, sticky="NSEW")
             self.next_row += 1
 
-        self.add_button = ttk.Button(self.frame, text="+", command=self.add_folder)
+        self.add_button = ttk.Button(self.frame, text="+", command=self.add_folder, style="success.TButton")
         self.add_button.grid(column=0, row=self.next_row)
 
         self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy)
@@ -540,10 +540,10 @@ class IntervalWindow:
         self.interval_input.insert(0, self.current_interval)
 
         self.confirm_button = ttk.Button(self.frame, text="Confirm",
-                                         command=self.confirm_interval_change)
+                                         command=self.confirm_interval_change, style="success.TButton")
         self.confirm_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.close_button = ttk.Button(self.frame, text="Cancel", command=self.master.destroy)
+        self.close_button = ttk.Button(self.frame, text="Cancel", command=self.master.destroy, style="danger.TButton")
         self.close_button.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.frame.pack(fill="both", expand=True, padx=20, pady=20)
@@ -583,7 +583,6 @@ class MainPage:
 
         self.folders_button = Button(self.frame, text="Folders", command=self.open_folder_window)
         self.folders_button.pack(fill="both", expand=True, padx=20, pady=20)
-
 
         self.interval_button = Button(self.frame, text="Set Update Interval", command=self.open_interval_window)
         self.interval_button.pack(fill="both", expand=True, padx=20, pady=20)
