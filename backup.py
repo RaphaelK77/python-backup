@@ -252,10 +252,11 @@ def txt_event(event):
 
 
 class ConfigDescriptionWindow:
-    def __init__(self, master, config, caller):
+    def __init__(self, master, config, caller, conf_window):
         self.master = master
         self.config = config
         self.caller = caller
+        self.conf_window = conf_window
         self.frame = Frame(self.master)
         self.frame.pack(fill="both", expand=True)
         self.frame.grid(row=1, column=0, sticky="nsew")
@@ -280,7 +281,7 @@ class ConfigDescriptionWindow:
         config_parser.write(tmp)
         tmp.close()
         self.master.destroy()
-        self.caller.wm_attributes("-topmost", True)
+        self.conf_window.reload()
 
     def close_description(self):
         if read_description_from_config(self.config) != self.text_entry.get(1.0, "end-1c"):
@@ -325,6 +326,12 @@ class ConfigWindow:
             description_button.grid(column=4, row=self.next_row, sticky="NSEW")
             if config == "config":
                 delete_button["state"] = "disabled"
+            self.next_row += 1
+            config_desc = read_description_from_config(config).replace("\n", " ")
+            if len(config_desc) > v.short_config_desc_len:
+                config_desc = config_desc[:v.short_config_desc_len]
+            short_desc_label = ttk.Label(self.frame, text=config_desc)
+            short_desc_label.grid(column=0, row=self.next_row, sticky="NSEW")
             self.next_row += 1
 
         Label(self.frame, text="").grid(column=0, row=self.next_row)
@@ -383,7 +390,7 @@ class ConfigWindow:
         self.master.wm_attributes("-topmost", False)
         config_description_window = Toplevel(self.master)
         config_description_window.title("{} - Description".format(config))
-        ConfigDescriptionWindow(config_description_window, config, self.master)
+        ConfigDescriptionWindow(config_description_window, config, self.master, self)
 
 
 class FolderWindow:
