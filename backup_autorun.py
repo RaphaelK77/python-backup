@@ -3,6 +3,7 @@ from datetime import date
 from datetime import datetime
 from tkinter import *
 from tkinter import ttk
+import ttkbootstrap as ttks
 
 from plyer import notification
 
@@ -37,7 +38,7 @@ class AutoUpdate:
         current_file.pack(fill="both", expand=True, padx=20, pady=20)
         current_file.bind("<Key>", lambda e: "break")
 
-        close = ttk.Button(self.frame, text="Quit", command=self.master.destroy)
+        close = ttk.Button(self.frame, text="Quit", command=self.master.destroy, style="danger.TButton")
         close.pack(fill="both", expand=True, padx=20, pady=20)
 
 
@@ -72,7 +73,8 @@ def auto_sync():
 
 
 if __name__ == '__main__':
-    v.root = Tk()
+    style = ttks.Style(theme="cosmo")
+    v.root = style.master
     v.root.title("Backup Auto")
     v.root.geometry("600x300")
 
