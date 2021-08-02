@@ -5,9 +5,9 @@ import logging
 import configparser
 from tkinter import filedialog
 from tkinter import ttk
+import tkinter as tk
 import tkinter.messagebox
 import vars as v
-from tkinter import *
 import ttkbootstrap as ttks
 import requests
 import webbrowser
@@ -259,20 +259,20 @@ class ConfigDescriptionWindow:
         self.config = config
         self.caller = caller
         self.conf_window = conf_window
-        self.frame = Frame(self.master)
+        self.frame = ttk.Frame(self.master)
         self.frame.pack(fill="both", expand=True)
         self.frame.grid(row=1, column=0, sticky="nsew")
         self.master.wm_attributes("-topmost", True)
 
-        self.text_entry = Text(self.frame)
-        self.text_entry.pack(side=TOP, expand=True)
-        self.text_entry.insert(INSERT, read_description_from_config(self.config))
+        self.text_entry = tk.Text(self.frame)
+        self.text_entry.pack(side=tk.TOP, expand=True)
+        self.text_entry.insert(tk.INSERT, read_description_from_config(self.config))
 
-        self.confirm_button = Button(self.frame, text="Save change", command=self.save_description)
-        self.confirm_button.pack(side=LEFT, expand=False)
+        self.confirm_button = ttk.Button(self.frame, text="Save change", command=self.save_description)
+        self.confirm_button.pack(side=tk.LEFT, expand=False)
 
-        self.cancel_button = Button(self.frame, text="Close", command=self.close_description)
-        self.cancel_button.pack(side=RIGHT, expand=False)
+        self.cancel_button = ttk.Button(self.frame, text="Close", command=self.close_description)
+        self.cancel_button.pack(side=tk.RIGHT, expand=False)
 
     def save_description(self):
         file_name = self.config + ".ini"
@@ -304,15 +304,15 @@ class ConfigWindow:
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
 
-        self.frame = Frame(self.master)
+        self.frame = ttk.Frame(self.master)
         self.frame.grid(row=0, column=0, padx=50, pady=50, sticky="NSEW")
 
         self.master.wm_attributes("-topmost", True)
         self.next_row = 1
 
-        config_col_label = Label(self.frame, text="Configuration Name", anchor="center", width=50)
+        config_col_label = ttk.Label(self.frame, text="Configuration Name", anchor="center", width=50)
         config_col_label.grid(column=0, row=self.next_row, sticky="NSEW")
-        interval_col_label = Label(self.frame, text="Update Interval", anchor="center")
+        interval_col_label = ttk.Label(self.frame, text="Update Interval", anchor="center")
         interval_col_label.grid(column=1, row=self.next_row, stick="NSEW")
         self.next_row += 1
 
@@ -320,15 +320,15 @@ class ConfigWindow:
         config_list = [cfg_file[0:-4] for cfg_file in config_file_list]
 
         for config in config_list:
-            name_label = Label(self.frame, text=config, anchor="center")
+            name_label = ttk.Label(self.frame, text=config, anchor="center")
             name_label.grid(column=0, row=self.next_row, sticky="NSEW")
-            interval_label = Label(self.frame, text=read_interval_from_config(config), anchor="center")
+            interval_label = ttk.Label(self.frame, text=read_interval_from_config(config), anchor="center")
             interval_label.grid(column=1, row=self.next_row, sticky="NSEW")
             load_button = ttk.Button(self.frame, text="load", command=lambda c=config: self.load_config(c))
             load_button.grid(column=2, row=self.next_row, sticky="NSEW")
             delete_button = ttk.Button(self.frame, text="delete", command=lambda c=config: self.delete_config(c), style="danger.TButton")
             delete_button.grid(column=3, row=self.next_row, sticky="NSEW")
-            description_button = ttk.Button(self.frame, text="description", command=lambda c=config: self.open_config_description_window(c), style="info.TButton")
+            description_button = ttk.Button(self.frame, text="description", command=lambda c=config: self.open_config_description_window(c), style="info.TButton", width=10)
             description_button.grid(column=4, row=self.next_row, sticky="NSEW")
             if config == "config":
                 delete_button["state"] = "disabled"
@@ -340,7 +340,7 @@ class ConfigWindow:
             short_desc_label.grid(column=0, row=self.next_row, sticky="NSEW")
             self.next_row += 1
 
-        Label(self.frame, text="").grid(column=0, row=self.next_row)
+        ttk.Label(self.frame, text="").grid(column=0, row=self.next_row)
         self.next_row += 1
         self.new_button = ttk.Button(self.frame, text="New Configuration", command=self.new_config, style="success.TButton")
         self.new_button.grid(column=0, row=self.next_row, sticky="NSEW")
@@ -348,7 +348,7 @@ class ConfigWindow:
         self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy, style="danger.Outline.TButton")
         self.close_button.grid(column=2, row=self.next_row, sticky="NSEW")
 
-        self.new_name_entry = Entry(self.frame)
+        self.new_name_entry = ttk.Entry(self.frame)
 
         self.frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
         self.frame.rowconfigure([i for i in range(self.next_row)], weight=1)
@@ -368,17 +368,17 @@ class ConfigWindow:
         self.close_button.destroy()
         self.next_row += 2
 
-        new_name_label = Label(self.frame, text="Enter New Configuration Name:", anchor="center")
+        new_name_label = ttk.Label(self.frame, text="Enter New Configuration Name:", anchor="center")
         new_name_label.grid(column=0, row=self.next_row, sticky="NSEW")
         self.next_row += 1
 
         self.new_name_entry.grid(column=0, row=self.next_row, sticky="NSEW")
 
-        confirm_button = Button(self.frame, text="Confirm", command=self.create_config)
+        confirm_button = ttk.Button(self.frame, text="Confirm", command=self.create_config)
         confirm_button.grid(column=1, row=self.next_row, sticky="NSEW")
         self.next_row += 1
 
-        self.close_button = Button(self.frame, text="Close", command=self.master.destroy)
+        self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy)
         self.close_button.grid(column=1, row=self.next_row, sticky="NSEW")
 
     def create_config(self):
@@ -392,14 +392,14 @@ class ConfigWindow:
     def reload(self):
         x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
         self.master.destroy()
-        config_window = Toplevel(v.root)
+        config_window = tk.Toplevel(v.root)
         config_window.title("Configurations")
         config_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
         ConfigWindow(config_window)
 
     def open_config_description_window(self, config):
         self.master.wm_attributes("-topmost", False)
-        config_description_window = Toplevel(self.master)
+        config_description_window = tk.Toplevel(self.master)
         config_description_window.title("{} - Description".format(config))
         ConfigDescriptionWindow(config_description_window, config, self.master, self)
 
@@ -407,7 +407,7 @@ class ConfigWindow:
 class FolderWindow:
     def __init__(self, master):
         self.master = master
-        self.frame = Frame(self.master)
+        self.frame = tk.Frame(self.master)
         self.frame.pack(fill="both", expand=True)
         self.frame.grid(row=0, column=0, sticky="NSEW", padx=50, pady=50)
         self.master.wm_attributes("-topmost", True)
@@ -417,11 +417,11 @@ class FolderWindow:
 
         self.next_row = 1
 
-        self.config_file = Entry(self.frame, textvariable=v.loaded_config_file, width=50)
+        self.config_file = ttk.Entry(self.frame, textvariable=v.loaded_config_file, width=50)
         self.config_file.grid(column=0, row=self.next_row, sticky="NSEW")
         self.config_file.bind("<Key>", lambda e: "break")
         self.next_row += 1
-        Label(self.frame, text="").grid(column=0, row=self.next_row)
+        ttk.Label(self.frame, text="").grid(column=0, row=self.next_row)
         self.next_row += 1
 
         src_col_label = ttk.Label(self.frame, anchor="center", text="Source")
@@ -456,26 +456,26 @@ class FolderWindow:
         self.add_button.destroy()
         self.close_button.destroy()
 
-        self.src_field = Entry(self.frame, width=70)
+        self.src_field = ttk.Entry(self.frame, width=70)
         self.src_field.grid(column=0, row=self.next_row)
-        self.dst_field = Entry(self.frame, width=70)
+        self.dst_field = ttk.Entry(self.frame, width=70)
         self.dst_field.grid(column=2, row=self.next_row)
 
-        swap_button = Button(self.frame, text="Swap", command=self.swap_folders)
+        swap_button = ttk.Button(self.frame, text="Swap", command=self.swap_folders)
         swap_button.grid(column=1, row=self.next_row)
 
         self.next_row += 1
 
-        src_select_button = Button(self.frame, text="...", command=lambda: self.select_directory(self.src_field))
+        src_select_button = ttk.Button(self.frame, text="...", command=lambda: self.select_directory(self.src_field))
         src_select_button.grid(column=0, row=self.next_row)
-        dst_select_button = Button(self.frame, text="...", command=lambda: self.select_directory(self.dst_field))
+        dst_select_button = ttk.Button(self.frame, text="...", command=lambda: self.select_directory(self.dst_field))
         dst_select_button.grid(column=2, row=self.next_row)
         self.next_row += 1
 
-        self.close_button = Button(self.frame, text="Close", command=self.confirm_close)
+        self.close_button = ttk.Button(self.frame, text="Close", command=self.confirm_close)
         self.close_button.grid(column=1, row=self.next_row)
 
-        confirm_button = Button(self.frame, text="Confirm", command=lambda: self.confirm_add_folder(self.src_field.get(), self.dst_field.get(), ))
+        confirm_button = ttk.Button(self.frame, text="Confirm", command=lambda: self.confirm_add_folder(self.src_field.get(), self.dst_field.get(), ))
         confirm_button.grid(column=2, row=self.next_row)
 
     def swap_folders(self):
@@ -512,7 +512,7 @@ class FolderWindow:
     def reload(self):
         x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
         self.master.destroy()
-        folder_window = Toplevel(v.root)
+        folder_window = tk.Toplevel(v.root)
         folder_window.title("Folders")
         folder_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
         FolderWindow(folder_window)
@@ -550,7 +550,7 @@ class FolderWindow:
 class IntervalWindow:
     def __init__(self, master):
         self.master = master
-        self.frame = Frame(self.master)
+        self.frame = tk.Frame(self.master)
 
         self.interval_label = ttk.Label(self.frame, text="Synchronisation interval (days):")
         self.interval_label.pack(fill="both", expand=True, padx=20, pady=20)
@@ -595,20 +595,20 @@ class IntervalWindow:
 class MainPage:
     def __init__(self, master):
         self.master = master
-        self.frame = Frame(self.master, padx=30, pady=20)
+        self.frame = tk.Frame(self.master, padx=30, pady=20)
 
-        self.config_file = Entry(self.frame, textvariable=v.loaded_config_file)
+        self.config_file = ttk.Entry(self.frame, textvariable=v.loaded_config_file)
         self.config_file.pack(fill="both", expand=True, padx=20, pady=20)
         # make entry read only
         self.config_file.bind("<Key>", lambda e: "break")
 
-        self.manage_config_button = Button(self.frame, text="Manage Configurations", command=self.open_config_window)
+        self.manage_config_button = ttk.Button(self.frame, text="Manage Configurations", command=self.open_config_window)
         self.manage_config_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.folders_button = Button(self.frame, text="Folders", command=self.open_folder_window)
+        self.folders_button = ttk.Button(self.frame, text="Folders", command=self.open_folder_window)
         self.folders_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.interval_button = Button(self.frame, text="Set Update Interval", command=self.open_interval_window)
+        self.interval_button = ttk.Button(self.frame, text="Set Update Interval", command=self.open_interval_window)
         self.interval_button.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.sync_button = ttk.Button(self.frame, text="Synchronize Now", command=start_sync, style="success.TButton")
@@ -617,28 +617,28 @@ class MainPage:
         self.close = ttk.Button(self.frame, text="Quit", command=v.root.destroy, style="danger.TButton")
         self.close.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.remaining = Entry(self.frame, textvariable=v.remaining_files)
+        self.remaining = ttk.Entry(self.frame, textvariable=v.remaining_files)
         self.remaining.pack(fill="both", expand=True, padx=20, pady=20)
         self.remaining.bind("<Key>", lambda e: "break")
 
-        self.current_file = Entry(self.frame, textvariable=v.current_file)
+        self.current_file = ttk.Entry(self.frame, textvariable=v.current_file)
         self.current_file.pack(fill="both", expand=True, padx=20, pady=20)
         self.current_file.bind("<Key>", lambda e: txt_event(e))
 
         self.frame.pack(fill="both", expand=True)
 
     def open_interval_window(self):
-        interval_window = Toplevel(self.master)
+        interval_window = tk.Toplevel(self.master)
         interval_window.title("Set Interval")
         IntervalWindow(interval_window)
 
     def open_folder_window(self):
-        folder_window = Toplevel(self.master)
+        folder_window = tk.Toplevel(self.master)
         folder_window.title("Folders")
         FolderWindow(folder_window)
 
     def open_config_window(self):
-        config_window = Toplevel(self.master)
+        config_window = tk.Toplevel(self.master)
         config_window.title("Configurations")
         ConfigWindow(config_window)
 
@@ -661,7 +661,7 @@ class UpdateWindow:
         self.master.columnconfigure(0, weight=1)
         self.master.rowconfigure(0, weight=1)
 
-        self.frame = Frame(self.master, padx=30, pady=20)
+        self.frame = ttk.Frame(self.master, padx=30, pady=20)
         self.frame.grid(row=0, column=0, sticky="NSEW")
 
         self.label = ttk.Label(self.frame, text="There is a new update available. The current version is {}, the latest version is {}. ".format(v.current_version, latest_version))
@@ -678,7 +678,7 @@ def check_for_updates():
     # check for new version
     latest_version = requests.get("https://api.github.com/repos/RaphaelK77/python-backup/releases/latest").json()["tag_name"]
     if v.current_version != latest_version:
-        update_window = Toplevel(v.root)
+        update_window = tk.Toplevel(v.root)
         update_window.title("New Update")
         UpdateWindow(update_window, latest_version)
     else:
@@ -693,9 +693,9 @@ if __name__ == '__main__':
     v.root.title("Backup")
     v.root.geometry("600x800")
 
-    v.remaining_files = StringVar()
-    v.current_file = StringVar()
-    v.loaded_config_file = StringVar()
+    v.remaining_files = tk.StringVar()
+    v.current_file = tk.StringVar()
+    v.loaded_config_file = tk.StringVar()
 
     v.loaded_config = read_config(v.default_config_file)
 
