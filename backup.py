@@ -390,9 +390,11 @@ class ConfigWindow:
             self.reload()
 
     def reload(self):
+        x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
         self.master.destroy()
         config_window = Toplevel(v.root)
         config_window.title("Configurations")
+        config_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
         ConfigWindow(config_window)
 
     def open_config_description_window(self, config):
@@ -493,6 +495,8 @@ class FolderWindow:
         global src_list
         global dst_list
 
+        self.master.wm_attributes("-topmost", False)
+
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to delete this folder pair?"):
             src_list.remove(src)
             dst_list.remove(dst)
@@ -502,11 +506,15 @@ class FolderWindow:
             check_remaining_files()
 
             self.reload()
+        else:
+            self.master.wm_attributes("-topmost", True)
 
     def reload(self):
+        x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
         self.master.destroy()
         folder_window = Toplevel(v.root)
         folder_window.title("Folders")
+        folder_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
         FolderWindow(folder_window)
 
     def select_directory(self, field):
