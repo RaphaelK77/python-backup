@@ -436,6 +436,10 @@ class FolderWindow:
         dst_col_label.grid(column=2, row=self.next_row, sticky="NSEW")
         self.next_row += 1
 
+        sep = ttk.Separator(self.frame, orient="horizontal")
+        sep.grid(row=self.next_row, sticky="EW", column=0, columnspan=4, pady=10)
+        self.next_row += 1
+
         for src, dst in zip(src_list, dst_list):
             src_label = ttk.Label(self.frame, text=src, anchor="center")
             src_label.grid(column=0, row=self.next_row, sticky="NSEW")
@@ -443,6 +447,9 @@ class FolderWindow:
             dst_label.grid(column=2, row=self.next_row, sticky="NSEW")
             remove_button = ttk.Button(self.frame, text="X", command=lambda s=src, d=dst: self.remove_src_dst(s, d), style="danger.TButton")
             remove_button.grid(column=3, row=self.next_row, sticky="NSEW")
+            self.next_row += 1
+            sep = ttk.Separator(self.frame, orient="horizontal")
+            sep.grid(row=self.next_row, sticky="EW", column=0, columnspan=4, pady=10)
             self.next_row += 1
 
         self.add_button = ttk.Button(self.frame, text="+", command=self.add_folder, style="success.TButton")
