@@ -674,7 +674,7 @@ class UpdateWindow:
         self.master.columnconfigure(0, weight=1)
         self.master.rowconfigure(0, weight=1)
 
-        self.frame = ttk.Frame(self.master, padx=30, pady=20)
+        self.frame = tk.Frame(self.master, padx=30, pady=20)
         self.frame.grid(row=0, column=0, sticky="NSEW")
 
         self.label = ttk.Label(self.frame, text="There is a new update available. The current version is {}, the latest version is {}. ".format(v.current_version, latest_version))
