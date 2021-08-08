@@ -315,6 +315,9 @@ class ConfigWindow:
         interval_col_label = ttk.Label(self.frame, text="Update Interval", anchor="center")
         interval_col_label.grid(column=1, row=self.next_row, stick="NSEW")
         self.next_row += 1
+        sep = ttk.Separator(self.frame, orient="horizontal")
+        sep.grid(row=self.next_row, sticky="EW", column=0, columnspan=5, pady=10)
+        self.next_row += 1
 
         config_file_list = get_config_files()
         config_list = [cfg_file[0:-4] for cfg_file in config_file_list]
@@ -338,6 +341,9 @@ class ConfigWindow:
                 config_desc = config_desc[:v.short_config_desc_len]
             short_desc_label = ttk.Label(self.frame, text=config_desc)
             short_desc_label.grid(column=0, row=self.next_row, sticky="NSEW")
+            self.next_row += 1
+            sep = ttk.Separator(self.frame, orient="horizontal")
+            sep.grid(row=self.next_row, sticky="EW", column=0, columnspan=5, pady=10)
             self.next_row += 1
 
         ttk.Label(self.frame, text="").grid(column=0, row=self.next_row)
