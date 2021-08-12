@@ -483,21 +483,21 @@ class FolderWindow:
         self.dst_field = ttk.Entry(self.frame, width=70)
         self.dst_field.grid(column=2, row=self.next_row)
 
-        swap_button = ttk.Button(self.frame, text="Swap", command=self.swap_folders)
+        swap_button = ttk.Button(self.frame, text="Swap", command=self.swap_folders, style="warning.TButton")
         swap_button.grid(column=1, row=self.next_row)
 
         self.next_row += 1
 
-        src_select_button = ttk.Button(self.frame, text="...", command=lambda: self.select_directory(self.src_field))
+        src_select_button = ttk.Button(self.frame, text="...", command=lambda: self.select_directory(self.src_field), style="primary.TButton")
         src_select_button.grid(column=0, row=self.next_row)
-        dst_select_button = ttk.Button(self.frame, text="...", command=lambda: self.select_directory(self.dst_field))
+        dst_select_button = ttk.Button(self.frame, text="...", command=lambda: self.select_directory(self.dst_field), style="primary.TButton")
         dst_select_button.grid(column=2, row=self.next_row)
         self.next_row += 1
 
-        self.close_button = ttk.Button(self.frame, text="Close", command=self.confirm_close)
+        self.close_button = ttk.Button(self.frame, text="Close", command=self.confirm_close, style="danger.TButton")
         self.close_button.grid(column=1, row=self.next_row)
 
-        confirm_button = ttk.Button(self.frame, text="Confirm", command=lambda: self.confirm_add_folder(self.src_field.get(), self.dst_field.get(), ))
+        confirm_button = ttk.Button(self.frame, text="Confirm", command=lambda: self.confirm_add_folder(self.src_field.get(), self.dst_field.get(), ), style="success.TButton")
         confirm_button.grid(column=2, row=self.next_row)
 
     def swap_folders(self):
