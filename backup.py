@@ -11,6 +11,7 @@ import vars as v
 import ttkbootstrap as ttks
 import requests
 import webbrowser
+from logging.handlers import RotatingFileHandler
 
 source_dir = r"E:\Dateien\Documents\Python\pythonBackup\source"
 destination_dir = r"E:\Dateien\Documents\Python\pythonBackup\destination"
@@ -22,13 +23,10 @@ logfile = open('backup.log', mode="w")
 logfile.close()
 
 # config logging
+handler = RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)
+logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s', handlers=[handler])
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-handler = logging.FileHandler(filename='backup.log')
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 src_list = []
 dst_list = []

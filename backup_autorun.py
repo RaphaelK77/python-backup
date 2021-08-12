@@ -4,20 +4,17 @@ from datetime import datetime
 from tkinter import *
 from tkinter import ttk
 import ttkbootstrap as ttks
+from logging.handlers import RotatingFileHandler
 
 from plyer import notification
 
 import backup
 import vars as v
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-handler = logging.FileHandler(filename='backup.log')
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
+handler = RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)
+logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s', handlers=[handler])
+logger = logging.getLogger("main")
+logger.setLevel(logging.INFO)
 
 class AutoUpdate:
     def __init__(self, master):
