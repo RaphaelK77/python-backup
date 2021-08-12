@@ -12,6 +12,8 @@ import ttkbootstrap as ttks
 import requests
 import webbrowser
 from logging.handlers import RotatingFileHandler
+import time
+import math
 
 source_dir = r"E:\Dateien\Documents\Python\pythonBackup\source"
 destination_dir = r"E:\Dateien\Documents\Python\pythonBackup\destination"
@@ -170,18 +172,30 @@ def sync_file(source, target):
             error_m = transfer_file(source, target)
 
     v.remaining_files_int -= 1
-    v.remaining_files.set("{} files remaining.".format(v.remaining_files_int))
+    if v.start_files - v.remaining_files_int < 100:
+        v.remaining_files.set(
+            "{} files (?) remaining.".format(v.remaining_files_int))
+    else:
+        v.remaining_files.set(
+            "{} files ({:02.0f}:{:02.0f}:{:02.0f}) remaining.".format(v.remaining_files_int, math.floor(v.remaining_time / 3600), math.floor((v.remaining_time % 3600) / 60), v.remaining_time % 60))
     v.root.update()
     return error_m
 
 
-def sync_dir(src, target):
+def sync_dir(src, target, start_time):
     error_m = None
     for path, dirs, files in os.walk(src):
         for source in files:
+            if v.time_update_timer >= v.time_update_interval:
+                copied_files = v.start_files - v.remaining_files_int
+                elapsed_time = time.time() - start_time
+                v.remaining_time = (elapsed_time / copied_files) * v.remaining_files_int
+                logger.info("Calculating time: copied files: {}, remaining files: {}, elapsed time: {}s, remaining time: {}s".format(copied_files, v.remaining_files_int, elapsed_time, v.remaining_time))
+                v.time_update_timer = 0
             path = path.replace("\\", "/")
             source_path = path + "/" + source
             error_m = sync_file(source_path, target + path.replace(src, "") + "/" + source)
+            v.time_update_timer += 1
     return error_m
 
 
@@ -202,13 +216,15 @@ def check_remaining_files():
 
 def sync():
     """Synchronise all source and destination folders in the current config file"""
+    start = time.time()
     check_remaining_files()
+    v.start_files = v.remaining_files_int
 
     error_messages = ""
 
     for src, dst in zip(src_list, dst_list):
         logger.info("Now syncing {} and {}".format(src, dst))
-        ret_val = sync_dir(src, dst)
+        ret_val = sync_dir(src, dst, start)
         if ret_val is not None:
             error_messages += ret_val
         logger.info("Done syncing {} and {}".format(src, dst))
