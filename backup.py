@@ -18,10 +18,6 @@ destination_dir = r"E:\Dateien\Documents\Python\pythonBackup\destination"
 source_dir2 = r"E:\Dateien\Documents\Python\pythonBackup\source2"
 destination_dir2 = r"E:\Dateien\Documents\Python\pythonBackup\destination2"
 
-# clear log file
-logfile = open('backup.log', mode="w")
-logfile.close()
-
 # config logging
 handler = RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s', handlers=[handler])
@@ -151,13 +147,18 @@ def transfer_file(source, target):
         shutil.copy2(source, target)
         logger.info('Copied {} to {}'.format(source, target))
     except FileNotFoundError:
-        os.makedirs(os.path.dirname(target))
+        try:
+            os.makedirs(os.path.dirname(target))
+        except FileNotFoundError as e:
+            logger.error(source + " cannot be copied: " + str(e))
+            return "Synchronization failed: {}\n".format(e)
         transfer_file(source, target)
 
 
 def sync_file(source, target):
     v.current_file.set(source)
     v.root.update()
+    error_m = None
     if len(source) > 260:
         v.illegal_paths += [source]
         logger.warning("{} has a path length of {} and will not be checked.".format(source, len(source)))
@@ -166,19 +167,22 @@ def sync_file(source, target):
 
         if size is not None:
             logger.info("Syncing file {}".format(source))
-            transfer_file(source, target)
+            error_m = transfer_file(source, target)
 
     v.remaining_files_int -= 1
     v.remaining_files.set("{} files remaining.".format(v.remaining_files_int))
     v.root.update()
+    return error_m
 
 
 def sync_dir(src, target):
+    error_m = None
     for path, dirs, files in os.walk(src):
         for source in files:
             path = path.replace("\\", "/")
             source_path = path + "/" + source
-            sync_file(source_path, target + path.replace(src, "") + "/" + source)
+            error_m = sync_file(source_path, target + path.replace(src, "") + "/" + source)
+    return error_m
 
 
 def check_remaining_files():
@@ -200,9 +204,13 @@ def sync():
     """Synchronise all source and destination folders in the current config file"""
     check_remaining_files()
 
+    error_messages = ""
+
     for src, dst in zip(src_list, dst_list):
         logger.info("Now syncing {} and {}".format(src, dst))
-        sync_dir(src, dst)
+        ret_val = sync_dir(src, dst)
+        if ret_val is not None:
+            error_messages += ret_val
         logger.info("Done syncing {} and {}".format(src, dst))
 
     illegal_path_file = os.getcwd().replace("\\", "/") + "/illegal_paths.txt"
@@ -219,19 +227,22 @@ def sync():
 
     if __name__ == '__main__':
         if v.illegal_paths:
-            illegal_paths_message = "\n{} files were ignored due to their path length.\nA log of these files was created in {}".format(
+            error_messages += "{} files were ignored due to their path length.\nA log of these files was created in {}\n".format(
                 len(v.illegal_paths), illegal_path_file)
-        else:
-            illegal_paths_message = ""
 
         if v.forbidden_paths:
-            forbidden_paths_message = "\n{} files were ignored due to restricted access.\nA log of these files was created in {}".format(
+            error_messages += "{} files were ignored due to restricted access.\nA log of these files was created in {}\n".format(
                 len(v.forbidden_paths), forbidden_path_file)
-        else:
-            forbidden_paths_message = ""
 
-        tkinter.messagebox.showinfo(title="Success", message="Synchronisation complete. Copied {} file(s).".format(
-            v.changed) + illegal_paths_message + forbidden_paths_message)
+        if error_messages == "":
+            tkinter.messagebox.showinfo(title="Success", message="Synchronisation complete. Copied {} file(s).".format(
+                v.changed))
+        else:
+            tkinter.messagebox.showinfo(title="Success", message="Synchronisation complete. Copied {} file(s).".format(
+                v.changed) + "Errors occured.")
+            error_window = tk.Toplevel(v.root)
+            error_window.title("Errors")
+            ErrorWindow(error_window, error_messages)
 
 
 def get_config_files():
@@ -685,6 +696,30 @@ class UpdateWindow:
         self.close_button.grid(row=1, column=1)
 
 
+class ErrorWindow:
+    def __init__(self, master, error_messages):
+        # window definitions
+        self.master = master
+        self.res = tk.Frame(self.master)
+        self.master.title("Error Messages")
+        self.res.pack()
+
+        # label for error entry
+        self.error_label = tk.Label(self.master, text="Errors occurred:")
+        self.error_label.pack()
+
+        # entry to show errors and warnings
+        self.error_text = tk.Text(self.master, width=200, height=10)
+        self.error_text.pack()
+        self.error_text.insert("end", error_messages)
+        # read-only
+        self.error_text.bind("<Key>", lambda e: "break")
+
+        # close button
+        self.close = tk.Button(self.master, text="Close", command=self.master.destroy)
+        self.close.pack()
+
+
 def check_for_updates():
     # check for new version
     latest_version = requests.get("https://api.github.com/repos/RaphaelK77/python-backup/releases/latest").json()["tag_name"]
@@ -698,6 +733,8 @@ def check_for_updates():
 
 if __name__ == '__main__':
     initialize()
+
+    logger.info("********** STARTING BACKUP ************")
 
     style = ttks.Style(theme="cosmo")
     v.root = style.master
@@ -717,5 +754,7 @@ if __name__ == '__main__':
     check_remaining_files()
 
     v.root.mainloop()
+
+    logger.info("Program quit by user.")
 
     handler.close()

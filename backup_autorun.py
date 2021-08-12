@@ -13,8 +13,9 @@ import vars as v
 
 handler = RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s', handlers=[handler])
-logger = logging.getLogger("main")
+logger = logging.getLogger("autorun")
 logger.setLevel(logging.INFO)
+
 
 class AutoUpdate:
     def __init__(self, master):
@@ -108,4 +109,3 @@ if __name__ == '__main__':
         notification.notify(title="Backup", message="Synchronisation complete. Copied {} file(s).".format(v.changed) + illegal_paths_message, timeout=300)
     except Exception as e:
         logger.error(e)
-
