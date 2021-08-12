@@ -524,8 +524,11 @@ class FolderWindow:
         self.dst_field.insert(0, tmp)
 
     def confirm_close(self):
+        self.master.wm_attributes("-topmost", False)
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to close without saving?"):
             self.master.destroy()
+        else:
+            self.master.wm_attributes("-topmost", True)
 
     def remove_src_dst(self, src, dst):
         logger.info("Removing folder pair {} and {}".format(src, dst))
@@ -566,6 +569,10 @@ class FolderWindow:
         if not src or not dst:
             self.master.wm_attributes("-topmost", False)
             tkinter.messagebox.showerror(title="Error", message="Source and destination cannot be empty.")
+            self.master.wm_attributes("-topmost", True)
+        elif src == dst:
+            self.master.wm_attributes("-topmost", False)
+            tkinter.messagebox.showerror(title="Error", message="Source and destination cannot be identical.")
             self.master.wm_attributes("-topmost", True)
         else:
             self.add_src_dst(src, dst)
