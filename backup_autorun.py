@@ -58,14 +58,15 @@ def check_if_sync():
 def auto_sync():
     for config in backup.get_config_files():
         logger.info("Current config: {}".format(config))
-        backup.read_config(config)
+        backup.read_config(config, check_remaining=False)
 
         if check_if_sync():
+            backup.check_remaining_files()
             backup.sync()
             logger.info("Done synchronizing config {}".format(v.loaded_config_filename))
+            v.loaded_config["PARAMETERS"]["last_run"] = str(date.today())
+            backup.write_config()
 
-        v.loaded_config["PARAMETERS"]["last_run"] = str(date.today())
-        backup.write_config()
     logger.info("Synchronization complete. Closing GUI.")
     v.root.destroy()
 

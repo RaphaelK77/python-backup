@@ -31,7 +31,7 @@ src_list = []
 dst_list = []
 
 
-def read_config(config_file: str, new_file=False):
+def read_config(config_file: str, new_file=False, check_remaining=True):
     global src_list
     global dst_list
 
@@ -71,7 +71,8 @@ def read_config(config_file: str, new_file=False):
     src_list = string_to_folder_list(config_parser["FOLDERS"]["src"])
     dst_list = string_to_folder_list(config_parser["FOLDERS"]["dst"])
 
-    check_remaining_files()
+    if check_remaining:
+        check_remaining_files()
 
     return config_parser
 
