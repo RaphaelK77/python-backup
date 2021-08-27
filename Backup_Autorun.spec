@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['backup_autorun.py'],
-             pathex=['E:\\Dateien\\Documents\\Python\\pythonBackup'],
+             pathex=['A:\\Dateien\\Documents\\Python\\pythonBackup'],
              binaries=[],
              datas=[('themes.json', 'ttkbootstrap'), ('Symbola.ttf', 'ttkbootstrap')],
              hiddenimports=['plyer.platforms.win.notification'],
