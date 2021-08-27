@@ -767,7 +767,7 @@ if __name__ == '__main__':
 
     style = ttks.Style(theme="cosmo")
     v.root = style.master
-    v.root.title("Backup")
+    v.root.title("Backup " + v.current_version)
     v.root.geometry("600x800")
 
     v.remaining_files = tk.StringVar()
