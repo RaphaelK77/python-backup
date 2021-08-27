@@ -3,6 +3,7 @@ import shutil
 import os.path
 import logging
 import configparser
+from datetime import date
 from tkinter import filedialog
 from tkinter import ttk
 import tkinter as tk
@@ -190,7 +191,8 @@ def sync_dir(src, target, start_time):
                 copied_files = v.start_files - v.remaining_files_int
                 elapsed_time = time.time() - start_time
                 v.remaining_time = (elapsed_time / copied_files) * v.remaining_files_int
-                logger.info("Calculating time: copied files: {}, remaining files: {}, elapsed time: {}s, remaining time: {}s".format(copied_files, v.remaining_files_int, elapsed_time, v.remaining_time))
+                logger.info(
+                    "Calculating time: copied files: {}, remaining files: {}, elapsed time: {}s, remaining time: {}s".format(copied_files, v.remaining_files_int, elapsed_time, v.remaining_time))
                 v.time_update_timer = 0
             path = path.replace("\\", "/")
             source_path = path + "/" + source
@@ -259,6 +261,9 @@ def sync():
             error_window = tk.Toplevel(v.root)
             error_window.title("Errors")
             ErrorWindow(error_window, error_messages)
+
+        v.loaded_config["PARAMETERS"]["last_run"] = str(date.today())
+        write_config()
 
 
 def get_config_files():
