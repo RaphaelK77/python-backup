@@ -206,13 +206,17 @@ def check_remaining_files():
     """Check how many files are still to be checked and update the counter"""
     files_to_check = 0
 
-    for src, dst in zip(src_list, dst_list):
+    # TODO: open window
+
+    for src in src_list:
         for path, dirs, files in os.walk(src):
             for _ in files:
                 files_to_check += 1
 
     v.remaining_files_int = files_to_check
     v.remaining_files.set("{} files remaining.".format(v.remaining_files_int))
+
+    # TODO: close window
 
     v.root.update()
 
