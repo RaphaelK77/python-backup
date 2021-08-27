@@ -1,5 +1,3 @@
-from tkinter import *
-
 remaining_files = None
 remaining_files_int = 0
 start_files = 0
