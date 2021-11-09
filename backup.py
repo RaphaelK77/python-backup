@@ -64,8 +64,10 @@ def read_config(config_file: str, new_file=False, check_remaining=True):
     config_file = config_file[0:-4]
     if config_file != "config":
         v.loaded_config_file.set("Loaded config: {}".format(config_file))
+        logger.info("Loaded config: {}".format(config_file))
     else:
         v.loaded_config_file.set("Loaded config: config (default)")
+        logger.info("Loaded config: config (default)")
     v.root.update()
 
     src_list = string_to_folder_list(config_parser["FOLDERS"]["src"])
@@ -398,6 +400,7 @@ class ConfigWindow:
         config_path = config + ".ini"
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to delete configuration '{}'?".format(config)):
             os.remove(config_path)
+            logger.info("Deleted config '{}'".format(config_path))
             self.reload()
 
     def load_config(self, config):
@@ -424,10 +427,14 @@ class ConfigWindow:
 
     def create_config(self):
         new_name = self.new_name_entry.get()
+        new_config = new_name + ".ini"
         if not new_name:
             tkinter.messagebox.showerror(title="Error", message="Filename cannot be empty")
             return
-        if read_config(new_name + ".ini", True):
+        ret_val = read_config(new_config, True)
+        if ret_val:
+            v.loaded_config = ret_val
+            logger.info("Created new config '{}'".format(new_name + ".ini"))
             self.reload()
 
     def reload(self):
