@@ -796,5 +796,3 @@ if __name__ == '__main__':
     v.root.mainloop()
 
     logger.info("Program quit by user.")
-
-    handler.close()
