@@ -738,9 +738,15 @@ def initialize():
     forbidden_path_file_handler = open(forbidden_path_file, "w")
     forbidden_path_file_handler.close()
 
-    # TODO: move old config files
-    # ini_file for ini_file in os.listdir(working_dir) if ini_file.endswith(".ini")
-    os.getcwd()
+    # move old config files and delete old logs
+    for file in os.listdir(os.getcwd()):
+        if file.endswith(".ini"):
+            shutil.copy2(file, v.working_dir)
+            os.remove(file)
+            logger.info("Moved {} to documents folder".format(file))
+        if file.endswith(".log") or ".log." in file:
+            os.remove(file)
+            logger.info("Deleted {}".format(file))
 
 
 class UpdateWindow:
@@ -801,6 +807,8 @@ def check_for_updates():
 
 if __name__ == '__main__':
     logger.info("********** STARTING BACKUP ************")
+
+    initialize()
 
     style = ttks.Style(theme="cosmo")
     v.root = style.master
