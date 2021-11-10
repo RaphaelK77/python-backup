@@ -11,6 +11,8 @@ from plyer import notification
 import backup
 import vars as v
 
+v.find_documents()
+
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
                     handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
 logger = logging.getLogger("autorun")

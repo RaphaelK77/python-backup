@@ -16,6 +16,12 @@ from logging.handlers import RotatingFileHandler
 import time
 import math
 
+v.find_documents()
+
+# create working directory if it does not exist
+if not os.path.isdir(v.working_dir):
+    os.mkdir(v.working_dir)
+
 # config logging
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
                     handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
@@ -658,8 +664,11 @@ class IntervalWindow:
             if new_interval < 0:
                 raise ValueError
         except ValueError:
-            logger.error("Interval change: '{}' is not an integer.".format(new_interval))
+            logger.warning("Interval change: '{}' is not an integer.".format(new_interval))
             tkinter.messagebox.showerror(title="Invalid Input", message="Interval must be a positive Integer.")
+            # move window to the top
+            self.master.wm_attributes("-topmost", True)
+            self.master.wm_attributes("-topmost", False)
             return
 
         logger.info("Changed interval from {} to {} for config {}.".format(self.current_interval, new_interval, v.loaded_config_filename))
@@ -720,13 +729,6 @@ class MainPage:
 
 
 def initialize():
-    # create appdata directory if it does not exist
-    logger.info("Working directory is {}".format(v.working_dir))
-    if not os.path.isdir(v.working_dir):
-        logger.info("Working directory does not exist. Creating it...")
-        os.mkdir(v.working_dir)
-        logger.info("Working directory has been created")
-
     # clear or create illegal and forbidden path files
     illegal_path_file = v.working_dir + r"\illegal_paths.txt"
     illegal_path_file_handler = open(illegal_path_file, "w")
@@ -799,8 +801,6 @@ def check_for_updates():
 
 if __name__ == '__main__':
     logger.info("********** STARTING BACKUP ************")
-
-    initialize()
 
     style = ttks.Style(theme="cosmo")
     v.root = style.master
