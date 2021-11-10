@@ -1,3 +1,5 @@
+import os.path
+
 remaining_files = None
 remaining_files_int = 0
 start_files = 0
@@ -15,3 +17,4 @@ current_version = "v1.3.2"
 remaining_time = -1
 time_update_timer = 0
 time_update_interval = 5
+working_dir = os.path.expandvars(r'%APPDATA%\PythonBackup')

@@ -16,11 +16,6 @@ from logging.handlers import RotatingFileHandler
 import time
 import math
 
-source_dir = r"E:\Dateien\Documents\Python\pythonBackup\source"
-destination_dir = r"E:\Dateien\Documents\Python\pythonBackup\destination"
-source_dir2 = r"E:\Dateien\Documents\Python\pythonBackup\source2"
-destination_dir2 = r"E:\Dateien\Documents\Python\pythonBackup\destination2"
-
 # config logging
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
                     handlers=[RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
@@ -39,10 +34,12 @@ def read_config(config_file: str, new_file=False, check_remaining=True):
         tkinter.messagebox.showerror(title="Error", message='Filename cannot contain /, \\, ?, |, ", :, *, <, >')
         return
 
+    config_path = get_path_for_config(config_file)
+
     # create log file if not exists
-    if not os.path.isfile(config_file):
+    if not os.path.isfile(config_path):
         try:
-            config_file_handler = open(config_file, "w")
+            config_file_handler = open(config_path, "w")
         except OSError:
             tkinter.messagebox.showerror(title="Error", message="Invalid filename")
             return
@@ -57,7 +54,7 @@ def read_config(config_file: str, new_file=False, check_remaining=True):
         return
 
     config_parser = configparser.ConfigParser()
-    config_parser.read(config_file)
+    config_parser.read(config_path)
 
     # update loaded config
     v.loaded_config_filename = config_file
@@ -81,16 +78,18 @@ def read_config(config_file: str, new_file=False, check_remaining=True):
 
 def read_interval_from_config(config_file: str):
     config_file += ".ini"
+    config_path = get_path_for_config(config_file)
     config_parser = configparser.ConfigParser()
-    config_parser.read(config_file)
+    config_parser.read(config_path)
     return config_parser["PARAMETERS"]["saveinterval"]
 
 
 def read_description_from_config(config_file: str):
     if ".ini" not in config_file:
         config_file += ".ini"
+    config_path = get_path_for_config(config_file)
     config_parser = configparser.ConfigParser()
-    config_parser.read(config_file)
+    config_parser.read(config_path)
     try:
         desc = config_parser["PARAMETERS"]["description"]
         return desc
@@ -110,13 +109,15 @@ def folder_list_to_string(folder_list: list):
 
 
 def write_config(file_name=None, cfg=None):
+    """ Saves buffered configuration to file """
     if file_name is None:
         file_name = v.loaded_config_filename
     if cfg is None:
         cfg = v.loaded_config
-    tmp = open(file_name, "w")
-    cfg.write(tmp)
-    tmp.close()
+    config_path = get_path_for_config(file_name)
+    io_stream = open(config_path, "w")
+    cfg.write(io_stream)
+    io_stream.close()
 
 
 def size_if_newer(source, target):
@@ -275,7 +276,7 @@ def sync():
 
 def get_config_files():
     """Returns a list of all available config files with ending"""
-    return [ini_file for ini_file in os.listdir() if ini_file.endswith(".ini")]
+    return [ini_file for ini_file in os.listdir(v.working_dir) if ini_file.endswith(".ini")]
 
 
 def start_sync():
@@ -288,6 +289,17 @@ def txt_event(event):
         return
     else:
         return "break"
+
+
+def get_path_for_config(config_name):
+    """
+    returns the path to a config file
+    :param config_name: name of the config, .ini is optional
+    :return: path as string
+    """
+    if ".ini" not in config_name:
+        config_name += ".ini"
+    return v.working_dir + "\\" + config_name
 
 
 class ConfigDescriptionWindow:
@@ -313,10 +325,11 @@ class ConfigDescriptionWindow:
 
     def save_description(self):
         file_name = self.config + ".ini"
+        config_path = v.working_dir + "\\" + file_name
         config_parser = configparser.ConfigParser()
-        config_parser.read(file_name)
+        config_parser.read(config_path)
         config_parser["PARAMETERS"]["description"] = self.text_entry.get(1.0, "end-1c")
-        tmp = open(file_name, "w")
+        tmp = open(config_path, "w")
         config_parser.write(tmp)
         tmp.close()
         self.master.destroy()
@@ -396,18 +409,19 @@ class ConfigWindow:
         self.frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
         self.frame.rowconfigure([i for i in range(self.next_row)], weight=1)
 
-    def delete_config(self, config):
-        config_path = config + ".ini"
-        if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to delete configuration '{}'?".format(config)):
+    def delete_config(self, config_file):
+        config_path = get_path_for_config(config_file)
+        if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to delete configuration '{}'?".format(config_file)):
             os.remove(config_path)
             logger.info("Deleted config '{}'".format(config_path))
             self.reload()
 
-    def load_config(self, config):
-        v.loaded_config = read_config(config + ".ini")
+    def load_config(self, config_file):
+        v.loaded_config = read_config(config_file + ".ini")
         self.master.destroy()
 
     def new_config(self):
+        """ Opens dialog for creating a new config """
         self.new_button.destroy()
         self.close_button.destroy()
         self.next_row += 2
@@ -426,15 +440,15 @@ class ConfigWindow:
         self.close_button.grid(column=1, row=self.next_row, sticky="NSEW")
 
     def create_config(self):
-        new_name = self.new_name_entry.get()
-        new_config = new_name + ".ini"
-        if not new_name:
+        """ Creates a new config from entered data """
+        new_config = self.new_name_entry.get()
+        if not new_config:
             tkinter.messagebox.showerror(title="Error", message="Filename cannot be empty")
             return
         ret_val = read_config(new_config, True)
         if ret_val:
             v.loaded_config = ret_val
-            logger.info("Created new config '{}'".format(new_name + ".ini"))
+            logger.info("Created new config '{}'".format(new_config + ".ini"))
             self.reload()
 
     def reload(self):
@@ -706,14 +720,25 @@ class MainPage:
 
 
 def initialize():
-    # clear illegal and forbidden path files
-    illegal_path_file = os.getcwd().replace("\\", "/") + "/illegal_paths.txt"
+    # create appdata directory if it does not exist
+    logger.info("Working directory is {}".format(v.working_dir))
+    if not os.path.isdir(v.working_dir):
+        logger.info("Working directory does not exist. Creating it...")
+        os.mkdir(v.working_dir)
+        logger.info("Working directory has been created")
+
+    # clear or create illegal and forbidden path files
+    illegal_path_file = v.working_dir + r"\illegal_paths.txt"
     illegal_path_file_handler = open(illegal_path_file, "w")
     illegal_path_file_handler.close()
 
-    forbidden_path_file = os.getcwd().replace("\\", "/") + "/forbidden_paths.txt"
+    forbidden_path_file = v.working_dir + r"\forbidden_paths.txt"
     forbidden_path_file_handler = open(forbidden_path_file, "w")
     forbidden_path_file_handler.close()
+
+    # TODO: move old config files
+    # ini_file for ini_file in os.listdir(working_dir) if ini_file.endswith(".ini")
+    os.getcwd()
 
 
 class UpdateWindow:
@@ -772,9 +797,9 @@ def check_for_updates():
 
 
 if __name__ == '__main__':
-    initialize()
-
     logger.info("********** STARTING BACKUP ************")
+
+    initialize()
 
     style = ttks.Style(theme="cosmo")
     v.root = style.master
