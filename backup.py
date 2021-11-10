@@ -744,7 +744,7 @@ def initialize():
             shutil.copy2(file, v.working_dir)
             os.remove(file)
             logger.info("Moved {} to documents folder".format(file))
-        if file.endswith(".log") or ".log." in file:
+        if file.endswith(".log") or ".log." in file or file.endswith(".txt"):
             os.remove(file)
             logger.info("Deleted {}".format(file))
 
