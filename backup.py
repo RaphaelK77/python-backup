@@ -18,7 +18,7 @@ import math
 
 # config logging
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
-                    handlers=[RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
+                    handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -58,7 +58,7 @@ def read_config(config_file: str, new_file=False, check_remaining=True):
 
     # update loaded config
     v.loaded_config_filename = config_file
-    config_file = config_file[0:-4]
+    config_file = config_file.replace(".ini", "")
     if config_file != "config":
         v.loaded_config_file.set("Loaded config: {}".format(config_file))
         logger.info("Loaded config: {}".format(config_file))
@@ -787,6 +787,7 @@ class ErrorWindow:
 
 def check_for_updates():
     # check for new version
+    logger.info("Checking for updates...")
     latest_version = requests.get("https://api.github.com/repos/RaphaelK77/python-backup/releases/latest").json()["tag_name"]
     if v.current_version != latest_version:
         update_window = tk.Toplevel(v.root)
