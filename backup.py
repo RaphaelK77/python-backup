@@ -22,7 +22,8 @@ source_dir2 = r"E:\Dateien\Documents\Python\pythonBackup\source2"
 destination_dir2 = r"E:\Dateien\Documents\Python\pythonBackup\destination2"
 
 # config logging
-logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s', handlers=[RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
+logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
+                    handlers=[RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

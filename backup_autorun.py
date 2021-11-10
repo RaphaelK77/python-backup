@@ -11,7 +11,8 @@ from plyer import notification
 import backup
 import vars as v
 
-logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s', handlers=[RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
+logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
+                    handlers=[RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
 logger = logging.getLogger("autorun")
 logger.setLevel(logging.INFO)
 
