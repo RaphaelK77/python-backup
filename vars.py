@@ -1,7 +1,6 @@
-import os.path
 import ctypes
-from ctypes.wintypes import MAX_PATH
 import logging
+from ctypes.wintypes import MAX_PATH
 from logging.handlers import RotatingFileHandler
 
 working_dir = ""
@@ -22,7 +21,6 @@ current_version = "v1.4.0"
 remaining_time = -1
 time_update_timer = 0
 time_update_interval = 5
-os.path.expandvars(r'%MYDOCUMENTS%\PythonBackup')
 
 
 def find_documents():
