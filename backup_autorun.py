@@ -11,8 +11,7 @@ from plyer import notification
 import backup
 import vars as v
 
-handler = RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)
-logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s', handlers=[handler])
+logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s', handlers=[RotatingFileHandler(filename='backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
 logger = logging.getLogger("autorun")
 logger.setLevel(logging.INFO)
 
@@ -58,7 +57,7 @@ def check_if_sync():
 def auto_sync():
     for config in backup.get_config_files():
         logger.info("Current config: {}".format(config))
-        backup.read_config(config, check_remaining=False)
+        v.loaded_config = backup.read_config(config, check_remaining=False)
 
         if check_if_sync():
             backup.check_remaining_files()
