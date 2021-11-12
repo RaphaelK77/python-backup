@@ -40,6 +40,7 @@ def read_config(config_file: str, new_file=False, check_remaining=True):
     global dst_list
 
     if any(c in config_file for c in ["/", "\\", "?", "|", '"', ":", "*", "<", ">"]):
+        logger.warning("The filename that is being read contains illegal characters: '{}'".format(config_file))
         tkinter.messagebox.showerror(title="Error", message='Filename cannot contain /, \\, ?, |, ", :, *, <, >')
         return
 
@@ -350,7 +351,7 @@ class ConfigDescriptionWindow:
         config_parser["PARAMETERS"]["description"] = new_desc
         write_config(self.config, config_parser)
         logger.info("Changed description of config '{}'".format(self.config))
-        read_config(get_path_for_config(v.loaded_config_filename), check_remaining=False)
+        read_config(v.loaded_config_filename, check_remaining=False)
         self.master.destroy()
         self.conf_window.reload()
 
