@@ -344,9 +344,13 @@ class ConfigDescriptionWindow:
         tmp.close()
         """
         new_desc = self.text_entry.get(1.0, "end-1c")
-        v.loaded_config["PARAMETERS"]["description"] = new_desc
-        write_config(self.config)
+        config_path = get_path_for_config(self.config)
+        config_parser = configparser.ConfigParser()
+        config_parser.read(config_path)
+        config_parser["PARAMETERS"]["description"] = new_desc
+        write_config(self.config, config_parser)
         logger.info("Changed description of config '{}'".format(self.config))
+        read_config(get_path_for_config(v.loaded_config_filename), check_remaining=False)
         self.master.destroy()
         self.conf_window.reload()
 
@@ -465,10 +469,12 @@ class ConfigWindow:
         self.reload()
 
     def reload(self):
+        # save coordinates and window size
         x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
         self.master.destroy()
         config_window = tk.Toplevel(v.root)
         config_window.title("Configurations")
+        # apply saved window configuration
         config_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
         ConfigWindow(config_window)
 
