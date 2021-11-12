@@ -79,7 +79,7 @@ def read_config(config_file: str, new_file=False, check_remaining=True):
     if check_remaining:
         check_remaining_files()
 
-    return config_parser
+    v.loaded_config = config_parser
 
 
 def read_interval_from_config(config_file: str):
@@ -330,6 +330,7 @@ class ConfigDescriptionWindow:
         self.cancel_button.pack(side=tk.RIGHT, expand=False)
 
     def save_description(self):
+        """
         file_name = self.config + ".ini"
         config_path = v.working_dir + "\\" + file_name
         config_parser = configparser.ConfigParser()
@@ -338,6 +339,11 @@ class ConfigDescriptionWindow:
         tmp = open(config_path, "w")
         config_parser.write(tmp)
         tmp.close()
+        """
+        new_desc = self.text_entry.get(1.0, "end-1c")
+        v.loaded_config["PARAMETERS"]["description"] = new_desc
+        write_config(self.config)
+        logger.info("Changed description of config '{}'".format(self.config))
         self.master.destroy()
         self.conf_window.reload()
 
@@ -423,7 +429,7 @@ class ConfigWindow:
             self.reload()
 
     def load_config(self, config_file):
-        v.loaded_config = read_config(config_file + ".ini")
+        read_config(config_file + ".ini")
         self.master.destroy()
 
     def new_config(self):
@@ -451,11 +457,9 @@ class ConfigWindow:
         if not new_config:
             tkinter.messagebox.showerror(title="Error", message="Filename cannot be empty")
             return
-        ret_val = read_config(new_config, True)
-        if ret_val:
-            v.loaded_config = ret_val
-            logger.info("Created new config '{}'".format(new_config + ".ini"))
-            self.reload()
+        read_config(new_config, True)
+        logger.info("Created new config '{}'".format(new_config + ".ini"))
+        self.reload()
 
     def reload(self):
         x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
@@ -819,7 +823,7 @@ if __name__ == '__main__':
     v.current_file = tk.StringVar()
     v.loaded_config_file = tk.StringVar()
 
-    v.loaded_config = read_config(v.default_config_file)
+    read_config(v.default_config_file)
 
     main_page = MainPage(v.root)
 
