@@ -35,7 +35,7 @@ src_list = []
 dst_list = []
 
 
-def read_config(config_file: str, new_file=False, check_remaining=True):
+def load_config(config_file: str, new_file=False, check_remaining=True):
     global src_list
     global dst_list
 
@@ -351,7 +351,7 @@ class ConfigDescriptionWindow:
         config_parser["PARAMETERS"]["description"] = new_desc
         write_config(self.config, config_parser)
         logger.info("Changed description of config '{}'".format(self.config))
-        read_config(v.loaded_config_filename, check_remaining=False)
+        load_config(v.loaded_config_filename, check_remaining=False)
         self.master.destroy()
         self.conf_window.reload()
 
@@ -437,7 +437,7 @@ class ConfigWindow:
             self.reload()
 
     def load_config(self, config_file):
-        read_config(config_file + ".ini")
+        load_config(config_file + ".ini")
         self.master.destroy()
 
     def new_config(self):
@@ -465,7 +465,7 @@ class ConfigWindow:
         if not new_config:
             tkinter.messagebox.showerror(title="Error", message="Filename cannot be empty")
             return
-        read_config(new_config, True)
+        load_config(new_config, True)
         logger.info("Created new config '{}'".format(new_config + ".ini"))
         self.reload()
 
@@ -833,7 +833,7 @@ if __name__ == '__main__':
     v.current_file = tk.StringVar()
     v.loaded_config_file = tk.StringVar()
 
-    read_config(v.default_config_file)
+    load_config(v.default_config_file)
 
     main_page = MainPage(v.root)
 

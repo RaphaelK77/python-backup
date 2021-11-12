@@ -60,7 +60,7 @@ def should_current_config_be_synced():
 def auto_sync():
     for config in backup.get_config_files():
         logger.info("Current config: {}".format(config))
-        v.loaded_config = backup.read_config(config, check_remaining=False)
+        backup.load_config(config, check_remaining=False)
 
         if should_current_config_be_synced():
             backup.check_remaining_files()
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     v.current_file = StringVar()
     v.loaded_config_file = StringVar()
 
-    v.loaded_config = backup.read_config(v.default_config_file)
+    backup.load_config(v.default_config_file)
 
     backup.check_remaining_files()
 
