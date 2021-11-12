@@ -16,11 +16,14 @@ from logging.handlers import RotatingFileHandler
 import time
 import math
 
+# locate windows documents folder
 v.find_documents()
 
 # create working directory if it does not exist
 if not os.path.isdir(v.working_dir):
     os.mkdir(v.working_dir)
+if not os.path.isdir(v.config_dir):
+    os.mkdir(v.config_dir)
 
 # config logging
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
@@ -282,7 +285,7 @@ def sync():
 
 def get_config_files():
     """Returns a list of all available config files with ending"""
-    return [ini_file for ini_file in os.listdir(v.working_dir) if ini_file.endswith(".ini")]
+    return [ini_file for ini_file in os.listdir(v.config_dir) if ini_file.endswith(".ini")]
 
 
 def start_sync():
@@ -305,7 +308,7 @@ def get_path_for_config(config_name):
     """
     if ".ini" not in config_name:
         config_name += ".ini"
-    return v.working_dir + "\\" + config_name
+    return v.config_dir + "\\" + config_name
 
 
 class ConfigDescriptionWindow:
@@ -745,7 +748,7 @@ def initialize():
     # move old config files and delete old logs
     for file in os.listdir(os.getcwd()):
         if file.endswith(".ini"):
-            shutil.copy2(file, v.working_dir)
+            shutil.copy2(file, v.config_dir)
             os.remove(file)
             logger.info("Moved {} to documents folder".format(file))
         if file.endswith(".log") or ".log." in file or file.endswith(".txt"):
@@ -800,7 +803,7 @@ class ErrorWindow:
 def check_for_updates():
     # check for new version
     logger.info("Checking for updates...")
-    latest_version = requests.get("https://api.github.com/repos/RaphaelK77/python-backup/releases/latest").json()["tag_name"]
+    latest_version = requests.get(v.git_link).json()["tag_name"]
     if v.current_version != latest_version:
         update_window = tk.Toplevel(v.root)
         update_window.title("New Update")

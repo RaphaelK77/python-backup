@@ -42,7 +42,7 @@ class AutoUpdate:
         close.pack(fill="both", expand=True, padx=20, pady=20)
 
 
-def check_if_sync():
+def should_current_config_be_synced():
     """Check if current config should be synchronized"""
     try:
         last_run = v.loaded_config["PARAMETERS"]["last_run"]
@@ -62,7 +62,7 @@ def auto_sync():
         logger.info("Current config: {}".format(config))
         v.loaded_config = backup.read_config(config, check_remaining=False)
 
-        if check_if_sync():
+        if should_current_config_be_synced():
             backup.check_remaining_files()
             backup.sync()
             logger.info("Done synchronizing config {}".format(v.loaded_config_filename))
@@ -74,6 +74,8 @@ def auto_sync():
 
 
 if __name__ == '__main__':
+    logger.info("********** STARTING AUTO-BACKUP ************")
+
     style = ttks.Style(theme="cosmo")
     v.root = style.master
     v.root.title("Backup Auto")

@@ -4,6 +4,7 @@ from ctypes.wintypes import MAX_PATH
 from logging.handlers import RotatingFileHandler
 
 working_dir = ""
+config_dir = ""
 remaining_files = None
 remaining_files_int = 0
 start_files = 0
@@ -21,15 +22,18 @@ current_version = "v1.4.1"
 remaining_time = -1
 time_update_timer = 0
 time_update_interval = 5
+git_link = "https://api.github.com/repos/RaphaelK77/python-backup/releases/latest"
 
 
 def find_documents():
     """ find documents folder """
     global working_dir
+    global config_dir
     dll = ctypes.windll.shell32
     buf = ctypes.create_unicode_buffer(MAX_PATH + 1)
     if dll.SHGetSpecialFolderPathW(None, buf, 0x0005, False):
         working_dir = buf.value + r"\PythonBackup"
+        config_dir = working_dir + r"\configurations"
     else:
         logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
                             handlers=[RotatingFileHandler(filename='backup_crash.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=True)])
