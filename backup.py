@@ -249,13 +249,13 @@ def sync():
             error_messages += ret_val
         logger.info("Done syncing {} and {}".format(src, dst))
 
-    illegal_path_file = os.getcwd().replace("\\", "/") + "/illegal_paths.txt"
+    illegal_path_file = v.working_dir + r"\illegal_paths.txt"
     illegal_path_file_handler = open(illegal_path_file, "a")
     for illegal_path in v.illegal_paths:
         illegal_path_file_handler.write(illegal_path + "\n")
     illegal_path_file_handler.close()
 
-    forbidden_path_file = os.getcwd().replace("\\", "/") + "/forbidden_paths.txt"
+    forbidden_path_file = v.working_dir + r"\forbidden_paths.txt"
     forbidden_path_file_handler = open(forbidden_path_file, "a")
     for forbidden_path in v.forbidden_paths:
         forbidden_path_file_handler.write(forbidden_path + "\n")
@@ -285,7 +285,7 @@ def sync():
 
 
 def get_config_files():
-    """Returns a list of all available config files with ending"""
+    """Returns a list of all available config files with ending .ini"""
     return [ini_file for ini_file in os.listdir(v.config_dir) if ini_file.endswith(".ini")]
 
 
