@@ -201,7 +201,7 @@ def sync_dir(src, target, start_time):
     error_m = None
     for path, dirs, files in os.walk(src):
         for source in files:
-            if v.time_update_timer >= v.time_update_interval:
+            if v.time_update_timer >= v.time_update_interval and copied_files > 0:
                 copied_files = v.start_files - v.remaining_files_int
                 elapsed_time = time.time() - start_time
                 v.remaining_time = (elapsed_time / copied_files) * v.remaining_files_int
@@ -219,12 +219,15 @@ def check_remaining_files():
     """Check how many files are still to be checked and update the counter"""
     files_to_check = 0
 
+    logger.info("Indexing files for config {}...".format(v.loaded_config_filename))
     # TODO: open window
 
     for src in src_list:
         for path, dirs, files in os.walk(src):
             for _ in files:
                 files_to_check += 1
+
+    logger.info("Found {} files to check.".format(files_to_check))
 
     v.remaining_files_int = files_to_check
     v.remaining_files.set("{} files remaining.".format(v.remaining_files_int))
