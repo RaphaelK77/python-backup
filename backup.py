@@ -202,12 +202,15 @@ def sync_dir(src, target, start_time):
     for path, dirs, files in os.walk(src):
         for source in files:
             if v.time_update_timer >= v.time_update_interval and copied_files > 0:
-                copied_files = v.start_files - v.remaining_files_int
-                elapsed_time = time.time() - start_time
-                v.remaining_time = (elapsed_time / copied_files) * v.remaining_files_int
-                logger.info(
-                    "Calculating time: copied files: {}, remaining files: {}, elapsed time: {}s, remaining time: {}s".format(copied_files, v.remaining_files_int, elapsed_time, v.remaining_time))
-                v.time_update_timer = 0
+                try:
+                    copied_files = v.start_files - v.remaining_files_int
+                    elapsed_time = time.time() - start_time
+                    v.remaining_time = (elapsed_time / copied_files) * v.remaining_files_int
+                    logger.info(
+                        "Calculating time: copied files: {}, remaining files: {}, elapsed time: {}s, remaining time: {}s".format(copied_files, v.remaining_files_int, elapsed_time, v.remaining_time))
+                    v.time_update_timer = 0
+                except Exception as e:
+                    logger.error("There was an exception calculating the remaining time: {}".format(e))
             path = path.replace("\\", "/")
             source_path = path + "/" + source
             error_m = sync_file(source_path, target + path.replace(src, "") + "/" + source)
