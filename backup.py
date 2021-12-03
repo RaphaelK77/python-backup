@@ -199,6 +199,7 @@ def sync_file(source, target):
 
 def sync_dir(src, target, start_time):
     error_m = None
+    copied_files = 0
     for path, dirs, files in os.walk(src):
         for source in files:
             if v.time_update_timer >= v.time_update_interval and copied_files > 0:
