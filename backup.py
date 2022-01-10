@@ -202,9 +202,9 @@ def sync_dir(src, target, start_time):
     copied_files = 0
     for path, dirs, files in os.walk(src):
         for source in files:
+            copied_files = v.start_files - v.remaining_files_int
             if v.time_update_timer >= v.time_update_interval and copied_files > 0:
                 try:
-                    copied_files = v.start_files - v.remaining_files_int
                     elapsed_time = time.time() - start_time
                     v.remaining_time = (elapsed_time / copied_files) * v.remaining_files_int
                     logger.info(
@@ -404,6 +404,7 @@ class ConfigWindow:
             name_label.grid(column=0, row=self.next_row, sticky="NSEW")
             interval_label = ttk.Label(self.frame, text=read_interval_from_config(config), anchor="center")
             interval_label.grid(column=1, row=self.next_row, sticky="NSEW")
+            # TODO: show time since last run
             load_button = ttk.Button(self.frame, text="load", command=lambda c=config: self.load_config(c))
             load_button.grid(column=2, row=self.next_row, sticky="NSEW")
             delete_button = ttk.Button(self.frame, text="delete", command=lambda c=config: self.delete_config(c), style="danger.TButton")

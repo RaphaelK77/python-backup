@@ -21,6 +21,8 @@ short_config_desc_len = 30
 current_version = "v1.4.5"
 remaining_time = -1
 time_update_timer = 0
+
+# update remaining time every x seconds
 time_update_interval = 5
 git_link = "https://api.github.com/repos/RaphaelK77/python-backup/releases/latest"
 
