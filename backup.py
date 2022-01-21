@@ -133,10 +133,10 @@ def write_config(file_name=None, cfg=None):
 def size_if_newer(source, target):
     """ If newer it returns size, otherwise it returns False """
 
-    logger.info("Checking if {} is changed from {}".format(source, target))
+    logger.info("Comparing '{}' to '{}'".format(source, target))
 
     if not os.access(source, os.R_OK):
-        logger.error("No read access to {}.".format(source))
+        logger.error("No read access to '{}'.".format(source))
         v.forbidden_paths += source
         return None
 
@@ -162,7 +162,7 @@ def size_if_newer(source, target):
 def transfer_file(source, target):
     try:
         shutil.copy2(source, target)
-        logger.info('Copied {} to {}'.format(source, target))
+        logger.info("Copied '{}' to '{}'".format(source, target))
     except FileNotFoundError:
         try:
             os.makedirs(os.path.dirname(target))
@@ -208,7 +208,7 @@ def sync_dir(src, target, start_time):
                     elapsed_time = time.time() - start_time
                     v.remaining_time = (elapsed_time / copied_files) * v.remaining_files_int
                     logger.info(
-                        "Calculating time: copied files: {}, remaining files: {}, elapsed time: {}s, remaining time: {}s".format(copied_files, v.remaining_files_int, elapsed_time, v.remaining_time))
+                        "Calculating time: copied: {}, remaining: {}, elapsed: {}s, remaining time: {}s".format(copied_files, v.remaining_files_int, elapsed_time, v.remaining_time))
                     v.time_update_timer = 0
                 except Exception as e:
                     logger.error("There was an exception calculating the remaining time: {}".format(e))
