@@ -28,10 +28,11 @@ if not os.path.isdir(v.config_dir):
 # config logging
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
                     handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
-if __name__ == "__main__":
-    logger = logging.getLogger("main")
-else:
+if __name__ != "__main__":
     logger = logging.getLogger(__name__)
+else:
+    logger = logging.getLogger("main")
+
 logger.setLevel(logging.INFO)
 
 src_list = []
