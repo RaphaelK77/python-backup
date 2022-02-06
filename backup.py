@@ -381,16 +381,18 @@ class ConfigDescriptionWindow:
 
 
 class ConfigWindow:
-    def __init__(self, master):
+    def __init__(self, master, update_message=None, update_color=None):
         self.master = master
 
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
 
-        self.frame = ttk.Frame(self.master)
-        self.frame.grid(row=0, column=0, padx=50, pady=50, sticky="NSEW")
+        self.config_frame = tk.Frame(self.master)
+        self.config_frame.pack()
 
-        self.master.wm_attributes("-topmost", True)
+        self.frame = tk.Frame(self.config_frame)
+        self.frame.pack(fill=tk.BOTH, side=tk.BOTTOM, padx=10, pady=20)
+
         self.next_row = 1
 
         config_col_label = ttk.Label(self.frame, text="Configuration Name", anchor="center", width=50)
@@ -417,6 +419,7 @@ class ConfigWindow:
             delete_button.grid(column=3, row=self.next_row, sticky="NSEW")
             description_button = ttk.Button(self.frame, text="description", command=lambda c=config: self.open_config_description_window(c), style="info.TButton", width=10)
             description_button.grid(column=4, row=self.next_row, sticky="NSEW")
+
             if config == "config":
                 delete_button["state"] = "disabled"
             self.next_row += 1
@@ -435,7 +438,7 @@ class ConfigWindow:
         self.new_button = ttk.Button(self.frame, text="New Configuration", command=self.new_config, style="success.TButton")
         self.new_button.grid(column=0, row=self.next_row, sticky="NSEW")
 
-        self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy, style="danger.Outline.TButton")
+        self.close_button = ttk.Button(self.frame, text="Cancel", command=self.config_frame.destroy, style="danger.Outline.TButton")
         self.close_button.grid(column=2, row=self.next_row, sticky="NSEW")
 
         self.new_name_entry = ttk.Entry(self.frame)
@@ -444,16 +447,29 @@ class ConfigWindow:
         row_list = [i for i in range(self.next_row)]
         self.frame.rowconfigure(row_list, weight=1)
 
+        self.message = None
+
+        if update_message is not None and update_color is not None:
+            self.show_message(update_message, update_color)
+
+    def show_message(self, message: str, color: str):
+        # delete old message
+        if self.message is not None:
+            self.message.destroy()
+        self.message = tk.Label(self.config_frame, text=message)
+        self.message.pack(side=tk.TOP, fill=tk.X)
+        self.message.config(bg=color)
+
     def delete_config(self, config_file):
         config_path = get_path_for_config(config_file)
-        if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to delete configuration '{}'?".format(config_file)):
+        if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to delete configuration '{}'? This cannot be undone.".format(config_file)):
             os.remove(config_path)
             logger.info("Deleted config '{}'".format(config_path))
-            self.reload()
+            self.reload(update_message=f'Config "{config_file}" successfully deleted.', update_color="green2")
 
     def load_config(self, config_file):
         load_config(config_file + ".ini")
-        self.master.destroy()
+        self.show_message(f"Configuration '{config_file}' successfully loaded.", "green2")
 
     def new_config(self):
         """ Opens dialog for creating a new config """
@@ -471,7 +487,7 @@ class ConfigWindow:
         confirm_button.grid(column=1, row=self.next_row, sticky="NSEW")
         self.next_row += 1
 
-        self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy)
+        self.close_button = ttk.Button(self.frame, text="Close", command=self.config_frame.destroy)
         self.close_button.grid(column=1, row=self.next_row, sticky="NSEW")
 
     def create_config(self):
@@ -482,20 +498,13 @@ class ConfigWindow:
             return
         load_config(new_config, True)
         logger.info("Created new config '{}'".format(new_config + ".ini"))
-        self.reload()
+        self.reload(update_message=f'New config "{new_config}" successfully created.', update_color="green2")
 
-    def reload(self):
-        # save coordinates and window size
-        x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
-        self.master.destroy()
-        config_window = tk.Toplevel(v.root)
-        config_window.title("Configurations")
-        # apply saved window configuration
-        config_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        ConfigWindow(config_window)
+    def reload(self, update_message=None, update_color=None):
+        self.config_frame.destroy()
+        ConfigWindow(self.master, update_message, update_color)
 
     def open_config_description_window(self, config):
-        self.master.wm_attributes("-topmost", False)
         config_description_window = tk.Toplevel(self.master)
         config_description_window.title("{} - Description".format(config))
         ConfigDescriptionWindow(config_description_window, config, self.master, self)
@@ -559,6 +568,7 @@ class FolderWindow:
 
         self.message = None
 
+        # show message on reload
         if update_message is not None and update_color is not None:
             self.show_message(update_message, update_color)
 
@@ -732,7 +742,7 @@ class MainPage:
         # make entry read only
         self.config_file.bind("<Key>", lambda e: "break")
 
-        self.manage_config_button = ttk.Button(self.frame, text="Manage Configurations", command=self.open_config_window)
+        self.manage_config_button = ttk.Button(self.frame, text="Manage Configurations", command=self.open_config_page)
         self.manage_config_button.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.folders_button = ttk.Button(self.frame, text="Folders", command=self.open_folder_page)
@@ -767,17 +777,9 @@ class MainPage:
         self.clear_guest_frame()
         FolderWindow(self.guest_frame)
 
-    def open_folder_window(self):
-        # TODO: in-window
-        folder_window = tk.Toplevel(self.master)
-        folder_window.title("Folders")
-        FolderWindow(folder_window)
-
-    def open_config_window(self):
-        # TODO: in-window
-        config_window = tk.Toplevel(self.master)
-        config_window.title("Configurations")
-        ConfigWindow(config_window)
+    def open_config_page(self):
+        self.clear_guest_frame()
+        ConfigWindow(self.guest_frame)
 
 
 def initialize():
