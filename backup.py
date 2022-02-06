@@ -28,7 +28,10 @@ if not os.path.isdir(v.config_dir):
 # config logging
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
                     handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
-logger = logging.getLogger(__name__)
+if __name__ == "__main__":
+    logger = logging.getLogger("main")
+else:
+    logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 src_list = []
@@ -214,7 +217,7 @@ def sync_dir(src, target, start_time):
                     logger.error("There was an exception calculating the remaining time: {}".format(e))
             path = path.replace("\\", "/")
             source_path = path + "/" + source
-            error_m = sync_file(source_path, target + path.replace(src, "") + "/" + source)
+            error_m = sync_file(source_path, target + path.replace(src.replace("\\", "/"), "") + "/" + source)
             v.time_update_timer += 1
     return error_m
 
