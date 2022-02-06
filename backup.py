@@ -675,10 +675,14 @@ class IntervalWindow:
                                          command=self.confirm_interval_change, style="success.TButton")
         self.confirm_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.close_button = ttk.Button(self.frame, text="Cancel", command=self.master.destroy, style="danger.TButton")
+        self.close_button = ttk.Button(self.frame, text="Back", command=self.back_to_main_page, style="danger.TButton")
         self.close_button.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    def back_to_main_page(self):
+        self.frame.destroy()
+        MainPage(self.master)
 
     def confirm_interval_change(self):
         """Confirm the new interval and close the calling window"""
@@ -700,7 +704,7 @@ class IntervalWindow:
         logger.info("Changed interval from {} to {} for config {}.".format(self.current_interval, new_interval, v.loaded_config_filename))
         v.loaded_config["PARAMETERS"]["saveinterval"] = str(new_interval)
         write_config()
-        self.master.destroy()
+        self.back_to_main_page()
 
 
 class MainPage:
@@ -719,7 +723,7 @@ class MainPage:
         self.folders_button = ttk.Button(self.frame, text="Folders", command=self.open_folder_window)
         self.folders_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.interval_button = ttk.Button(self.frame, text="Set Update Interval", command=self.open_interval_window)
+        self.interval_button = ttk.Button(self.frame, text="Set Update Interval", command=self.open_interval_page)
         self.interval_button.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.sync_button = ttk.Button(self.frame, text="Synchronize Now", command=start_sync, style="success.TButton")
@@ -738,10 +742,9 @@ class MainPage:
 
         self.frame.pack(fill="both", expand=True)
 
-    def open_interval_window(self):
-        interval_window = tk.Toplevel(self.master)
-        interval_window.title("Set Interval")
-        IntervalWindow(interval_window)
+    def open_interval_page(self):
+        self.frame.destroy()
+        IntervalWindow(self.master)
 
     def open_folder_window(self):
         folder_window = tk.Toplevel(self.master)
