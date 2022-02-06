@@ -234,12 +234,25 @@ def sync_dir(src, target, start_time):
     return error_m
 
 
+def first_file_check():
+    frame = tk.Frame(v.root)
+    frame.pack()
+    message = tk.Label(frame, text="Indexing files. Please wait...")
+    message.pack()
+    v.root.update()
+
+    check_remaining_files()
+
+    frame.destroy()
+    MainPage(v.root)
+    v.root.update()
+
+
 def check_remaining_files():
-    """Check how many files are still to be checked and update the counter"""
+    """Count how many files are still to be checked and update the counter"""
     files_to_check = 0
 
     logger.info("Indexing files for config {}...".format(v.loaded_config_filename))
-    # TODO: open window
 
     for src in src_list:
         for path, dirs, files in os.walk(src):
@@ -250,8 +263,6 @@ def check_remaining_files():
 
     v.remaining_files_int = files_to_check
     v.remaining_files.set("{} files remaining.".format(v.remaining_files_int))
-
-    # TODO: close window
 
     v.root.update()
 
@@ -378,8 +389,9 @@ class ConfigDescriptionWindow:
 
 
 class ConfigWindow:
-    def __init__(self, master, update_message=None, update_color=None):
+    def __init__(self, master, main_page, update_message=None, update_color=None):
         self.master = master
+        self.main_page = main_page
 
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
@@ -439,7 +451,7 @@ class ConfigWindow:
         self.new_button = ttk.Button(self.frame, text="New Configuration", command=self.new_config, style="success.TButton")
         self.new_button.grid(column=0, row=self.next_row, sticky="NSEW")
 
-        self.close_button = ttk.Button(self.frame, text="Cancel", command=self.config_frame.destroy, style="danger.Outline.TButton")
+        self.close_button = ttk.Button(self.frame, text="Cancel", command=self.close, style="danger.Outline.TButton")
         self.close_button.grid(column=2, row=self.next_row, sticky="NSEW")
 
         self.new_name_entry = ttk.Entry(self.frame)
@@ -452,6 +464,10 @@ class ConfigWindow:
 
         if update_message is not None and update_color is not None:
             self.show_message(update_message, update_color)
+
+    def close(self):
+        self.config_frame.destroy()
+        self.main_page.resize()
 
     def show_message(self, message: str, color: str):
         # delete old message
@@ -513,7 +529,8 @@ class ConfigWindow:
 
 
 class FolderWindow:
-    def __init__(self, master, update_message=None, update_color=None):
+    def __init__(self, master, main_page, update_message=None, update_color=None):
+        self.main_page = main_page
         self.master = master
         self.folder_frame = tk.Frame(self.master)
         self.folder_frame.pack(fill=tk.X, expand=True, padx=0, pady=0)
@@ -551,7 +568,7 @@ class FolderWindow:
         self.add_button = ttk.Button(self.frame, text="+", command=self.add_folder, style="success.TButton")
         self.add_button.grid(column=0, row=self.next_row)
 
-        self.close_button = ttk.Button(self.frame, text="Back", command=self.folder_frame.destroy, style="danger.Outline.TButton")
+        self.close_button = ttk.Button(self.frame, text="Back", command=self.close, style="danger.Outline.TButton")
         self.close_button.grid(column=1, row=self.next_row)
 
         self.master.columnconfigure(0, weight=1)
@@ -604,9 +621,13 @@ class FolderWindow:
         self.dst_field.delete(0, 'end')
         self.dst_field.insert(0, tmp)
 
+    def close(self):
+        self.folder_frame.destroy()
+        self.main_page.resize()
+
     def confirm_close(self):
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to close without saving?"):
-            self.folder_frame.destroy()
+            self.close()
 
     def remove_src_dst(self, src, dst):
         logger.info("Removing folder pair {} and {}".format(src, dst))
@@ -666,9 +687,14 @@ class FolderWindow:
 
 
 class IntervalWindow:
-    def __init__(self, master):
+    def __init__(self, master, main_page):
         self.master = master
-        self.frame = tk.Frame(self.master)
+        self.main_page = main_page
+
+        self.interval_frame = tk.Frame(self.master)
+        self.interval_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.frame = tk.Frame(self.interval_frame)
         self.frame.pack(fill=tk.BOTH, side=tk.BOTTOM, expand=True, padx=20, pady=20)
 
         self.interval_label = ttk.Label(self.frame, text="Synchronisation interval (days):")
@@ -687,13 +713,14 @@ class IntervalWindow:
         self.confirm_button.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
         self.cancel_button = ttk.Button(self.frame, text="Cancel",
-                                        command=self.frame.destroy, style="danger.TButton")
+                                        command=self.close, style="danger.TButton")
         self.cancel_button.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
         self.message = None
 
-    def back_to_main_page(self):
-        self.frame.destroy()
+    def close(self):
+        self.interval_frame.destroy()
+        self.main_page.resize()
 
     def confirm_interval_change(self):
         """Confirm the new interval and close the calling window"""
@@ -718,7 +745,7 @@ class IntervalWindow:
 
         if self.message is not None:
             self.message.destroy()
-        self.message = tk.Label(self.master, text="Interval changed successfully.")
+        self.message = tk.Label(self.interval_frame, text="Interval changed successfully.")
         self.message.pack(side=tk.TOP, fill=tk.X)
         self.message.config(bg="green2")
 
@@ -746,7 +773,7 @@ class MainPage:
         self.interval_button = ttk.Button(self.frame, text="Set Update Interval", command=self.open_interval_page)
         self.interval_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.sync_button = ttk.Button(self.frame, text="Synchronize Now", command=start_sync, style="success.TButton")
+        self.sync_button = ttk.Button(self.frame, text="Synchronize Now", command=self.start_sync, style="success.TButton")
         self.sync_button.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.close = ttk.Button(self.frame, text="Quit", command=v.root.destroy, style="danger.TButton")
@@ -760,21 +787,35 @@ class MainPage:
         self.current_file.pack(fill="both", expand=True, padx=20, pady=20)
         self.current_file.bind("<Key>", lambda e: txt_event(e))
 
+    def start_sync(self):
+        buttons = [self.manage_config_button, self.folders_button, self.interval_button, self.sync_button]
+        self.clear_guest_frame()
+        self.resize()
+        for button in buttons:
+            button["state"] = tk.DISABLED
+        start_sync()
+        for button in buttons:
+            button["state"] = tk.ACTIVE
+
     def clear_guest_frame(self):
         for widget in self.guest_frame.winfo_children():
             widget.destroy()
 
     def open_interval_page(self):
         self.clear_guest_frame()
-        IntervalWindow(self.guest_frame)
+        IntervalWindow(self.guest_frame, main_page=self)
 
     def open_folder_page(self):
         self.clear_guest_frame()
-        FolderWindow(self.guest_frame)
+        FolderWindow(self.guest_frame, main_page=self)
 
     def open_config_page(self):
         self.clear_guest_frame()
-        ConfigWindow(self.guest_frame)
+        ConfigWindow(self.guest_frame, main_page=self)
+
+    def resize(self):
+        self.frame.config(width=250)
+        self.guest_frame.config(width=100)
 
 
 def initialize():
@@ -843,7 +884,9 @@ class ErrorWindow:
 
 
 def check_for_updates():
-    # check for new version
+    """
+    check for new version
+    """
     logger.info("Checking for updates...")
     latest_version = requests.get(v.git_link).json()["tag_name"]
     if v.current_version != latest_version:
@@ -870,12 +913,10 @@ if __name__ == '__main__':
 
     load_config(v.default_config_file)
 
-    main_page = MainPage(v.root)
-
-    check_for_updates()
-
-    check_remaining_files()
+    v.root.after(5, first_file_check())
 
     v.root.mainloop()
+
+    check_for_updates()
 
     logger.info("Program quit by user.")
