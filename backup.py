@@ -3,7 +3,7 @@ import shutil
 import os.path
 import logging
 import configparser
-from datetime import date
+from datetime import date, datetime
 from tkinter import filedialog
 from tkinter import ttk
 import tkinter as tk
@@ -99,6 +99,15 @@ def read_interval_from_config(config_file: str):
     config_parser = configparser.ConfigParser()
     config_parser.read(config_path)
     return config_parser["PARAMETERS"]["saveinterval"]
+
+
+def read_last_run_from_config(config_file: str):
+    config_file += ".ini"
+    config_path = get_path_for_config(config_file)
+    config_parser = configparser.ConfigParser()
+    config_parser.read(config_path)
+    last_run = config_parser["PARAMETERS"]["last_run"]
+    return datetime.strptime(last_run, '%Y-%m-%d').date()
 
 
 def read_description_from_config(config_file: str):
@@ -387,6 +396,9 @@ class ConfigWindow:
         config_col_label.grid(column=0, row=self.next_row, sticky="NSEW")
         interval_col_label = ttk.Label(self.frame, text="Update Interval", anchor="center")
         interval_col_label.grid(column=1, row=self.next_row, stick="NSEW")
+        last_run_col_label = ttk.Label(self.frame, text="Last Run", anchor="center", width=15)
+        last_run_col_label.grid(column=2, row=self.next_row, stick="NSEW")
+
         self.next_row += 1
         sep = ttk.Separator(self.frame, orient="horizontal")
         sep.grid(row=self.next_row, sticky="EW", column=0, columnspan=5, pady=10)
@@ -400,13 +412,14 @@ class ConfigWindow:
             name_label.grid(column=0, row=self.next_row, sticky="NSEW")
             interval_label = ttk.Label(self.frame, text=read_interval_from_config(config), anchor="center")
             interval_label.grid(column=1, row=self.next_row, sticky="NSEW")
-            # TODO: show time since last run
+            last_run_label = ttk.Label(self.frame, text=read_last_run_from_config(config), anchor="center")
+            last_run_label.grid(column=2, row=self.next_row, sticky="NSEW")
             load_button = ttk.Button(self.frame, text="load", command=lambda c=config: self.load_config(c))
-            load_button.grid(column=2, row=self.next_row, sticky="NSEW")
+            load_button.grid(column=3, row=self.next_row, sticky="NSEW")
             delete_button = ttk.Button(self.frame, text="delete", command=lambda c=config: self.delete_config(c), style="danger.TButton")
-            delete_button.grid(column=3, row=self.next_row, sticky="NSEW")
+            delete_button.grid(column=4, row=self.next_row, sticky="NSEW")
             description_button = ttk.Button(self.frame, text="description", command=lambda c=config: self.open_config_description_window(c), style="info.TButton", width=10)
-            description_button.grid(column=4, row=self.next_row, sticky="NSEW")
+            description_button.grid(column=5, row=self.next_row, sticky="NSEW")
 
             if config == "config":
                 delete_button["state"] = "disabled"
@@ -431,7 +444,7 @@ class ConfigWindow:
 
         self.new_name_entry = ttk.Entry(self.frame)
 
-        self.frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        self.frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
         row_list = [i for i in range(self.next_row)]
         self.frame.rowconfigure(row_list, weight=1)
 
