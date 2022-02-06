@@ -42,7 +42,7 @@ src_list = []
 dst_list = []
 
 
-def load_config(config_file: str, new_file=False, check_remaining=True):
+def load_config(config_file="config.ini", new_file=False, check_remaining=True):
     global src_list
     global dst_list
 
@@ -331,32 +331,24 @@ class ConfigDescriptionWindow:
         self.config = config
         self.caller = caller
         self.conf_window = conf_window
-        self.frame = ttk.Frame(self.master)
-        self.frame.pack(fill="both", expand=True)
-        self.frame.grid(row=1, column=0, sticky="nsew")
-        self.master.wm_attributes("-topmost", True)
+
+        self.frame = tk.Frame(self.master)
+        self.frame.pack(fill=tk.BOTH, expand=True)
+
+        self.editing_label = tk.Label(self.frame, text=f'Currently editing description of "{config}".')
+        self.editing_label.pack(side=tk.TOP, expand=True)
 
         self.text_entry = tk.Text(self.frame)
         self.text_entry.pack(side=tk.TOP, expand=True)
         self.text_entry.insert(tk.INSERT, read_description_from_config(self.config))
 
-        self.confirm_button = ttk.Button(self.frame, text="Save change", command=self.save_description)
-        self.confirm_button.pack(side=tk.LEFT, expand=False)
+        self.confirm_button = ttk.Button(self.frame, text="Save changes", command=self.save_description, style="success.TButton")
+        self.confirm_button.pack(side=tk.LEFT, expand=False, padx=10, pady=20)
 
-        self.cancel_button = ttk.Button(self.frame, text="Close", command=self.close_description)
-        self.cancel_button.pack(side=tk.RIGHT, expand=False)
+        self.cancel_button = ttk.Button(self.frame, text="Back", command=self.close_description, style="danger.TButton")
+        self.cancel_button.pack(side=tk.RIGHT, expand=False, padx=10, pady=20)
 
     def save_description(self):
-        """
-        file_name = self.config + ".ini"
-        config_path = v.working_dir + "\\" + file_name
-        config_parser = configparser.ConfigParser()
-        config_parser.read(config_path)
-        config_parser["PARAMETERS"]["description"] = self.text_entry.get(1.0, "end-1c")
-        tmp = open(config_path, "w")
-        config_parser.write(tmp)
-        tmp.close()
-        """
         new_desc = self.text_entry.get(1.0, "end-1c")
         config_path = get_path_for_config(self.config)
         config_parser = configparser.ConfigParser()
@@ -365,19 +357,15 @@ class ConfigDescriptionWindow:
         write_config(self.config, config_parser)
         logger.info("Changed description of config '{}'".format(self.config))
         load_config(v.loaded_config_filename, check_remaining=False)
-        self.master.destroy()
-        self.conf_window.reload()
+        self.frame.destroy()
+        ConfigWindow(self.master, "Description successfully changed.", "green2")
 
     def close_description(self):
         if read_description_from_config(self.config) != self.text_entry.get(1.0, "end-1c"):
-            if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to discard these changes?"):
-                self.master.destroy()
-                self.caller.wm_attributes("-topmost", True)
-            else:
+            if not tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to discard these changes?"):
                 return
-        else:
-            self.master.destroy()
-            self.caller.wm_attributes("-topmost", True)
+        self.frame.destroy()
+        ConfigWindow(self.master)
 
 
 class ConfigWindow:
@@ -505,9 +493,8 @@ class ConfigWindow:
         ConfigWindow(self.master, update_message, update_color)
 
     def open_config_description_window(self, config):
-        config_description_window = tk.Toplevel(self.master)
-        config_description_window.title("{} - Description".format(config))
-        ConfigDescriptionWindow(config_description_window, config, self.master, self)
+        self.config_frame.destroy()
+        ConfigDescriptionWindow(self.master, config, self.master, self)
 
 
 class FolderWindow:
