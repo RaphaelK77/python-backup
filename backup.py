@@ -747,11 +747,13 @@ class MainPage:
         IntervalWindow(self.master)
 
     def open_folder_window(self):
+        # TODO: in-window
         folder_window = tk.Toplevel(self.master)
         folder_window.title("Folders")
         FolderWindow(folder_window)
 
     def open_config_window(self):
+        # TODO: in-window
         config_window = tk.Toplevel(self.master)
         config_window.title("Configurations")
         ConfigWindow(config_window)
