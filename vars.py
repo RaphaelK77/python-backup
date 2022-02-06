@@ -23,7 +23,6 @@ remaining_time = -1
 time_update_timer = 0
 
 main_geometry = "1500x800"
-folder_geometry = "1000x600"
 
 # update remaining time every x seconds
 time_update_interval = 5
