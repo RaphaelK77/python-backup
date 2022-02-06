@@ -453,6 +453,8 @@ class ConfigWindow:
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to delete configuration '{}'? This cannot be undone.".format(config_file)):
             os.remove(config_path)
             logger.info("Deleted config '{}'".format(config_path))
+            # load default config
+            load_config()
             self.reload(update_message=f'Config "{config_file}" successfully deleted.', update_color="green2")
 
     def load_config(self, config_file):
