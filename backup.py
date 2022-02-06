@@ -245,6 +245,9 @@ def first_file_check():
 
     frame.destroy()
     MainPage(v.root)
+
+    check_for_updates()
+
     v.root.update()
 
 
@@ -916,7 +919,5 @@ if __name__ == '__main__':
     v.root.after(5, first_file_check())
 
     v.root.mainloop()
-
-    check_for_updates()
 
     logger.info("Program quit by user.")
