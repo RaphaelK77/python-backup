@@ -524,13 +524,6 @@ class FolderWindow:
 
         self.next_row = 1
 
-        self.config_file = ttk.Entry(self.frame, textvariable=v.loaded_config_file, width=50)
-        self.config_file.grid(column=0, row=self.next_row, sticky="NSEW")
-        self.config_file.bind("<Key>", lambda e: "break")
-        self.next_row += 1
-        ttk.Label(self.frame, text="").grid(column=0, row=self.next_row)
-        self.next_row += 1
-
         src_col_label = ttk.Label(self.frame, anchor="center", text="Source")
         src_col_label.grid(column=0, row=self.next_row, sticky="NSEW")
         dst_col_label = ttk.Label(self.frame, anchor="center", text="Destination")
