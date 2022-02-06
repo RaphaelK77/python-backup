@@ -203,7 +203,6 @@ def sync_file(source, target):
 
 def sync_dir(src, target, start_time):
     error_m = None
-    copied_files = 0
     for path, dirs, files in os.walk(src):
         for source in files:
             copied_files = v.start_files - v.remaining_files_int
@@ -439,7 +438,8 @@ class ConfigWindow:
         self.new_name_entry = ttk.Entry(self.frame)
 
         self.frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
-        self.frame.rowconfigure([i for i in range(self.next_row)], weight=1)
+        row_list = [i for i in range(self.next_row)]
+        self.frame.rowconfigure(row_list, weight=1)
 
     def delete_config(self, config_file):
         config_path = get_path_for_config(config_file)
@@ -502,9 +502,7 @@ class FolderWindow:
     def __init__(self, master):
         self.master = master
         self.frame = tk.Frame(self.master)
-        self.frame.pack(fill="both", expand=True)
-        self.frame.grid(row=0, column=0, sticky="NSEW", padx=50, pady=50)
-        self.master.wm_attributes("-topmost", True)
+        self.frame.pack(fill="x", expand=True, padx=50)
 
         self.src_field = None
         self.dst_field = None
@@ -543,7 +541,7 @@ class FolderWindow:
         self.add_button = ttk.Button(self.frame, text="+", command=self.add_folder, style="success.TButton")
         self.add_button.grid(column=0, row=self.next_row)
 
-        self.close_button = ttk.Button(self.frame, text="Close", command=self.master.destroy, style="danger.Outline.TButton")
+        self.close_button = ttk.Button(self.frame, text="Back", command=self.back_to_main_page, style="danger.Outline.TButton")
         self.close_button.grid(column=1, row=self.next_row)
 
         self.master.columnconfigure(0, weight=1)
@@ -552,6 +550,11 @@ class FolderWindow:
         self.frame.columnconfigure([i for i in range(3)], weight=1)
         self.frame.rowconfigure(1, weight=1)
         self.frame.rowconfigure([i for i in range(1, self.next_row)], weight=3)
+
+    def back_to_main_page(self):
+        self.frame.destroy()
+        self.master.geometry(v.main_geometry)
+        MainPage(self.master)
 
     def add_folder(self):
         self.add_button.destroy()
@@ -586,20 +589,19 @@ class FolderWindow:
         self.dst_field.delete(0, 'end')
         self.dst_field.insert(0, tmp)
 
+    def back_to_main_page(self):
+        self.frame.destroy()
+        MainPage(self.master)
+
     def confirm_close(self):
-        self.master.wm_attributes("-topmost", False)
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to close without saving?"):
-            self.master.destroy()
-        else:
-            self.master.wm_attributes("-topmost", True)
+            self.back_to_main_page()
 
     def remove_src_dst(self, src, dst):
         logger.info("Removing folder pair {} and {}".format(src, dst))
 
         global src_list
         global dst_list
-
-        self.master.wm_attributes("-topmost", False)
 
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to delete this folder pair?"):
             src_list.remove(src)
@@ -610,8 +612,6 @@ class FolderWindow:
             check_remaining_files()
 
             self.reload()
-        else:
-            self.master.wm_attributes("-topmost", True)
 
     def reload(self):
         x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
@@ -630,13 +630,13 @@ class FolderWindow:
 
     def confirm_add_folder(self, src, dst):
         if not src or not dst:
-            self.master.wm_attributes("-topmost", False)
+            #self.master.wm_attributes("-topmost", False)
             tkinter.messagebox.showerror(title="Error", message="Source and destination cannot be empty.")
-            self.master.wm_attributes("-topmost", True)
+            #self.master.wm_attributes("-topmost", True)
         elif src == dst:
-            self.master.wm_attributes("-topmost", False)
+            #self.master.wm_attributes("-topmost", False)
             tkinter.messagebox.showerror(title="Error", message="Source and destination cannot be identical.")
-            self.master.wm_attributes("-topmost", True)
+            #self.master.wm_attributes("-topmost", True)
         else:
             self.add_src_dst(src, dst)
 
@@ -659,12 +659,13 @@ class IntervalWindow:
     def __init__(self, master):
         self.master = master
         self.frame = tk.Frame(self.master)
+        self.frame.pack(fill=tk.BOTH, side=tk.BOTTOM, expand=True, padx=20, pady=20)
 
         self.interval_label = ttk.Label(self.frame, text="Synchronisation interval (days):")
-        self.interval_label.pack(fill="both", expand=True, padx=20, pady=20)
+        self.interval_label.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
         self.interval_input = ttk.Entry(self.frame)
-        self.interval_input.pack(fill="both", expand=True, padx=20, pady=20)
+        self.interval_input.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
         # insert current interval
         logger.info("Loaded Sync Interval {} from config {}".format(v.loaded_config["PARAMETERS"]["saveinterval"], v.loaded_config_filename))
@@ -673,12 +674,9 @@ class IntervalWindow:
 
         self.confirm_button = ttk.Button(self.frame, text="Confirm",
                                          command=self.confirm_interval_change, style="success.TButton")
-        self.confirm_button.pack(fill="both", expand=True, padx=20, pady=20)
+        self.confirm_button.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        self.close_button = ttk.Button(self.frame, text="Back", command=self.back_to_main_page, style="danger.TButton")
-        self.close_button.pack(fill="both", expand=True, padx=20, pady=20)
-
-        self.frame.pack(fill="both", expand=True, padx=20, pady=20)
+        self.message = None
 
     def back_to_main_page(self):
         self.frame.destroy()
@@ -704,13 +702,22 @@ class IntervalWindow:
         logger.info("Changed interval from {} to {} for config {}.".format(self.current_interval, new_interval, v.loaded_config_filename))
         v.loaded_config["PARAMETERS"]["saveinterval"] = str(new_interval)
         write_config()
-        self.back_to_main_page()
+
+        if self.message is not None:
+            self.message.destroy()
+        self.message = tk.Label(self.master, text="Interval changed successfully.")
+        self.message.pack(side=tk.TOP, fill=tk.X)
+        self.message.config(bg="green2")
 
 
 class MainPage:
     def __init__(self, master):
         self.master = master
-        self.frame = tk.Frame(self.master, padx=30, pady=20)
+
+        self.frame = tk.Frame(self.master, padx=30, pady=5)
+        self.guest_frame = tk.Frame(self.master, padx=30, pady=5)
+        self.frame.pack(fill="both", side=tk.LEFT, expand=True)
+        self.guest_frame.pack(fill="both", side=tk.RIGHT, expand=True)
 
         self.config_file = ttk.Entry(self.frame, textvariable=v.loaded_config_file)
         self.config_file.pack(fill="both", expand=True, padx=20, pady=20)
@@ -720,7 +727,7 @@ class MainPage:
         self.manage_config_button = ttk.Button(self.frame, text="Manage Configurations", command=self.open_config_window)
         self.manage_config_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.folders_button = ttk.Button(self.frame, text="Folders", command=self.open_folder_window)
+        self.folders_button = ttk.Button(self.frame, text="Folders", command=self.open_folder_page)
         self.folders_button.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.interval_button = ttk.Button(self.frame, text="Set Update Interval", command=self.open_interval_page)
@@ -740,11 +747,17 @@ class MainPage:
         self.current_file.pack(fill="both", expand=True, padx=20, pady=20)
         self.current_file.bind("<Key>", lambda e: txt_event(e))
 
-        self.frame.pack(fill="both", expand=True)
+    def clear_guest_frame(self):
+        for widget in self.guest_frame.winfo_children():
+            widget.destroy()
 
     def open_interval_page(self):
-        self.frame.destroy()
-        IntervalWindow(self.master)
+        self.clear_guest_frame()
+        IntervalWindow(self.guest_frame)
+
+    def open_folder_page(self):
+        self.clear_guest_frame()
+        FolderWindow(self.guest_frame)
 
     def open_folder_window(self):
         # TODO: in-window
@@ -844,7 +857,7 @@ if __name__ == '__main__':
     style = ttks.Style(theme="cosmo")
     v.root = style.master
     v.root.title("Backup " + v.current_version)
-    v.root.geometry("600x800")
+    v.root.geometry(v.main_geometry)
 
     v.remaining_files = tk.StringVar()
     v.current_file = tk.StringVar()
