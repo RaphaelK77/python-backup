@@ -8,6 +8,9 @@ from tkinter import filedialog
 from tkinter import ttk
 import tkinter as tk
 import tkinter.messagebox
+
+import deprecation
+
 import vars as v
 import ttkbootstrap as ttks
 import requests
@@ -499,10 +502,13 @@ class ConfigWindow:
 
 
 class FolderWindow:
-    def __init__(self, master):
+    def __init__(self, master, update_message=None, update_color=None):
         self.master = master
-        self.frame = tk.Frame(self.master)
-        self.frame.pack(fill="x", expand=True, padx=50)
+        self.folder_frame = tk.Frame(self.master)
+        self.folder_frame.pack(fill=tk.X, expand=True, padx=0, pady=0)
+
+        self.frame = tk.Frame(self.folder_frame)
+        self.frame.pack(fill=tk.X, side=tk.BOTTOM, expand=True, padx=50, pady=20)
 
         self.src_field = None
         self.dst_field = None
@@ -541,7 +547,7 @@ class FolderWindow:
         self.add_button = ttk.Button(self.frame, text="+", command=self.add_folder, style="success.TButton")
         self.add_button.grid(column=0, row=self.next_row)
 
-        self.close_button = ttk.Button(self.frame, text="Back", command=self.back_to_main_page, style="danger.Outline.TButton")
+        self.close_button = ttk.Button(self.frame, text="Back", command=self.folder_frame.destroy, style="danger.Outline.TButton")
         self.close_button.grid(column=1, row=self.next_row)
 
         self.master.columnconfigure(0, weight=1)
@@ -551,9 +557,13 @@ class FolderWindow:
         self.frame.rowconfigure(1, weight=1)
         self.frame.rowconfigure([i for i in range(1, self.next_row)], weight=3)
 
+        self.message = None
+
+        if update_message is not None and update_color is not None:
+            self.show_message(update_message, update_color)
+
     def back_to_main_page(self):
-        self.frame.destroy()
-        self.master.geometry(v.main_geometry)
+        self.folder_frame.destroy()
         MainPage(self.master)
 
     def add_folder(self):
@@ -576,7 +586,7 @@ class FolderWindow:
         dst_select_button.grid(column=2, row=self.next_row)
         self.next_row += 1
 
-        self.close_button = ttk.Button(self.frame, text="Close", command=self.confirm_close, style="danger.TButton")
+        self.close_button = ttk.Button(self.frame, text="Cancel", command=self.confirm_close, style="danger.TButton")
         self.close_button.grid(column=1, row=self.next_row)
 
         confirm_button = ttk.Button(self.frame, text="Confirm", command=lambda: self.confirm_add_folder(self.src_field.get(), self.dst_field.get(), ), style="success.TButton")
@@ -589,13 +599,9 @@ class FolderWindow:
         self.dst_field.delete(0, 'end')
         self.dst_field.insert(0, tmp)
 
-    def back_to_main_page(self):
-        self.frame.destroy()
-        MainPage(self.master)
-
     def confirm_close(self):
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to close without saving?"):
-            self.back_to_main_page()
+            self.folder_frame.destroy()
 
     def remove_src_dst(self, src, dst):
         logger.info("Removing folder pair {} and {}".format(src, dst))
@@ -611,15 +617,11 @@ class FolderWindow:
             write_config()
             check_remaining_files()
 
-            self.reload()
+            self.reload(update_message="Folder pair successfully deleted.", update_color="green2")
 
-    def reload(self):
-        x, y, h, w = self.master.winfo_x(), self.master.winfo_y(), self.master.winfo_height(), self.master.winfo_width()
-        self.master.destroy()
-        folder_window = tk.Toplevel(v.root)
-        folder_window.title("Folders")
-        folder_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        FolderWindow(folder_window)
+    def reload(self, update_message=None, update_color=None):
+        self.folder_frame.destroy()
+        FolderWindow(self.master, update_message, update_color)
 
     def select_directory(self, field):
         self.master.wm_attributes("-topmost", False)
@@ -628,15 +630,18 @@ class FolderWindow:
         field.insert(0, folder_path)
         self.master.wm_attributes("-topmost", True)
 
+    def show_message(self, message: str, color: str):
+        if self.message is not None:
+            self.message.destroy()
+        self.message = tk.Label(self.folder_frame, text=message)
+        self.message.pack(side=tk.TOP, fill=tk.X)
+        self.message.config(bg=color)
+
     def confirm_add_folder(self, src, dst):
         if not src or not dst:
-            #self.master.wm_attributes("-topmost", False)
-            tkinter.messagebox.showerror(title="Error", message="Source and destination cannot be empty.")
-            #self.master.wm_attributes("-topmost", True)
+            self.show_message(message="Source and destination cannot be empty.", color="red")
         elif src == dst:
-            #self.master.wm_attributes("-topmost", False)
-            tkinter.messagebox.showerror(title="Error", message="Source and destination cannot be identical.")
-            #self.master.wm_attributes("-topmost", True)
+            self.show_message(message="Source and destination cannot be identical.", color="red")
         else:
             self.add_src_dst(src, dst)
 
@@ -652,7 +657,7 @@ class FolderWindow:
         v.loaded_config["FOLDERS"]["dst"] = folder_list_to_string(dst_list)
         check_remaining_files()
         write_config()
-        self.reload()
+        self.reload(update_message="Folder pair successfully added.", update_color="green2")
 
 
 class IntervalWindow:
@@ -676,11 +681,14 @@ class IntervalWindow:
                                          command=self.confirm_interval_change, style="success.TButton")
         self.confirm_button.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
+        self.cancel_button = ttk.Button(self.frame, text="Cancel",
+                                        command=self.frame.destroy, style="danger.TButton")
+        self.cancel_button.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
         self.message = None
 
     def back_to_main_page(self):
         self.frame.destroy()
-        MainPage(self.master)
 
     def confirm_interval_change(self):
         """Confirm the new interval and close the calling window"""
