@@ -531,6 +531,12 @@ class ConfigWindow:
         ConfigDescriptionWindow(self.master, config, self.master, self)
 
 
+def select_directory(field):
+    folder_path = filedialog.askdirectory()
+    field.delete(0, 'end')
+    field.insert(0, folder_path)
+
+
 class FolderWindow:
     def __init__(self, master, main_page, update_message=None, update_color=None):
         self.main_page = main_page
@@ -587,10 +593,6 @@ class FolderWindow:
         if update_message is not None and update_color is not None:
             self.show_message(update_message, update_color)
 
-    def back_to_main_page(self):
-        self.folder_frame.destroy()
-        MainPage(self.master)
-
     def add_folder(self):
         self.add_button.destroy()
         self.close_button.destroy()
@@ -605,9 +607,9 @@ class FolderWindow:
 
         self.next_row += 1
 
-        src_select_button = ttk.Button(self.frame, text="...", command=lambda: self.select_directory(self.src_field), style="primary.TButton")
+        src_select_button = ttk.Button(self.frame, text="...", command=lambda: select_directory(self.src_field), style="primary.TButton")
         src_select_button.grid(column=0, row=self.next_row)
-        dst_select_button = ttk.Button(self.frame, text="...", command=lambda: self.select_directory(self.dst_field), style="primary.TButton")
+        dst_select_button = ttk.Button(self.frame, text="...", command=lambda: select_directory(self.dst_field), style="primary.TButton")
         dst_select_button.grid(column=2, row=self.next_row)
         self.next_row += 1
 
@@ -650,14 +652,7 @@ class FolderWindow:
 
     def reload(self, update_message=None, update_color=None):
         self.folder_frame.destroy()
-        FolderWindow(self.master, update_message, update_color)
-
-    def select_directory(self, field):
-        self.master.wm_attributes("-topmost", False)
-        folder_path = filedialog.askdirectory()
-        field.delete(0, 'end')
-        field.insert(0, folder_path)
-        self.master.wm_attributes("-topmost", True)
+        FolderWindow(self.master, main_page=self.main_page, update_message=update_message, update_color=update_color)
 
     def show_message(self, message: str, color: str):
         if self.message is not None:
@@ -737,9 +732,6 @@ class IntervalWindow:
         except ValueError:
             logger.warning("Interval change: '{}' is not an integer.".format(new_interval))
             tkinter.messagebox.showerror(title="Invalid Input", message="Interval must be a positive Integer.")
-            # move window to the top
-            self.master.wm_attributes("-topmost", True)
-            self.master.wm_attributes("-topmost", False)
             return
 
         logger.info("Changed interval from {} to {} for config {}.".format(self.current_interval, new_interval, v.loaded_config_filename))
