@@ -1,23 +1,22 @@
-import os
-import shutil
-import os.path
-import logging
 import configparser
-from datetime import date, datetime
-from tkinter import filedialog
-from tkinter import ttk
+import logging
+import math
+import os
+import os.path
+import shutil
+import time
 import tkinter as tk
 import tkinter.messagebox
+import webbrowser
+from datetime import date, datetime
+from logging.handlers import RotatingFileHandler
+from tkinter import filedialog
+from tkinter import ttk
 
-import deprecation
+import requests
+import ttkbootstrap as ttks
 
 import vars as v
-import ttkbootstrap as ttks
-import requests
-import webbrowser
-from logging.handlers import RotatingFileHandler
-import time
-import math
 
 # locate windows documents folder
 v.find_documents()
@@ -41,6 +40,7 @@ logger.setLevel(logging.INFO)
 src_list = []
 dst_list = []
 
+main_page = None
 
 def load_config(config_file="config.ini", new_file=False, check_remaining=True):
     global src_list
@@ -106,6 +106,8 @@ def read_last_run_from_config(config_file: str):
     config_path = get_path_for_config(config_file)
     config_parser = configparser.ConfigParser()
     config_parser.read(config_path)
+    if "last_run" not in config_parser["PARAMETERS"]:
+        return "Never"
     last_run = config_parser["PARAMETERS"]["last_run"]
     return datetime.strptime(last_run, '%Y-%m-%d').date()
 
@@ -234,21 +236,23 @@ def sync_dir(src, target, start_time):
     return error_m
 
 
-def first_file_check():
-    frame = tk.Frame(v.root)
+def first_file_check(master):
+    global main_page
+
+    frame = tk.Frame(master)
     frame.pack()
     message = tk.Label(frame, text="Indexing files. Please wait...")
     message.pack()
-    v.root.update()
+    master.update()
 
     check_remaining_files()
 
     frame.destroy()
-    MainPage(v.root)
+    main_page = MainPage(master)
 
     check_for_updates()
 
-    v.root.update()
+    master.update()
 
 
 def check_remaining_files():
@@ -630,6 +634,9 @@ class FolderWindow:
         self.folder_frame.destroy()
         self.main_page.resize()
 
+    def exists(self):
+        return self.folder_frame.winfo_exists()
+
     def confirm_close(self):
         if tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to close without saving?"):
             self.close()
@@ -771,7 +778,7 @@ class MainPage:
         self.sync_button = ttk.Button(self.frame, text="Synchronize Now", command=self.start_sync, style="success.TButton")
         self.sync_button.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.close = ttk.Button(self.frame, text="Quit", command=v.root.destroy, style="danger.TButton")
+        self.close = ttk.Button(self.frame, text="Quit", command=self.master.destroy, style="danger.TButton")
         self.close.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.remaining = ttk.Entry(self.frame, textvariable=v.remaining_files)
@@ -781,6 +788,8 @@ class MainPage:
         self.current_file = ttk.Entry(self.frame, textvariable=v.current_file)
         self.current_file.pack(fill="both", expand=True, padx=20, pady=20)
         self.current_file.bind("<Key>", lambda e: txt_event(e))
+
+        self.guest = None
 
     def start_sync(self):
         buttons = [self.manage_config_button, self.folders_button, self.interval_button, self.sync_button]
@@ -798,15 +807,15 @@ class MainPage:
 
     def open_interval_page(self):
         self.clear_guest_frame()
-        IntervalWindow(self.guest_frame, main_page=self)
+        self.guest = IntervalWindow(self.guest_frame, main_page=self)
 
     def open_folder_page(self):
         self.clear_guest_frame()
-        FolderWindow(self.guest_frame, main_page=self)
+        self.guest = FolderWindow(self.guest_frame, main_page=self)
 
     def open_config_page(self):
         self.clear_guest_frame()
-        ConfigWindow(self.guest_frame, main_page=self)
+        self.guest = ConfigWindow(self.guest_frame, main_page=self)
 
     def resize(self):
         self.frame.config(width=250)
@@ -832,6 +841,21 @@ def initialize():
         if file.endswith(".log") or ".log." in file or file.endswith(".txt"):
             os.remove(file)
             logger.info("Deleted {}".format(file))
+
+    style = ttks.Style(theme="cosmo")
+    v.root = style.master
+    v.root.title("Backup " + v.current_version)
+    v.root.geometry(v.main_geometry)
+
+    v.remaining_files = tk.StringVar()
+    v.current_file = tk.StringVar()
+    v.loaded_config_file = tk.StringVar()
+
+    load_config(v.default_config_file)
+
+    v.root.after(5, first_file_check(v.root))
+
+    return v.root
 
 
 class UpdateWindow:
@@ -884,6 +908,7 @@ def check_for_updates():
     """
     logger.info("Checking for updates...")
     latest_version = requests.get(v.git_link).json()["tag_name"]
+    logger.info(f"Latest version: {latest_version}, current version: {v.current_version}")
     if v.current_version != latest_version:
         update_window = tk.Toplevel(v.root)
         update_window.title("New Update")
@@ -896,19 +921,6 @@ if __name__ == '__main__':
     logger.info("********** STARTING BACKUP ************")
 
     initialize()
-
-    style = ttks.Style(theme="cosmo")
-    v.root = style.master
-    v.root.title("Backup " + v.current_version)
-    v.root.geometry(v.main_geometry)
-
-    v.remaining_files = tk.StringVar()
-    v.current_file = tk.StringVar()
-    v.loaded_config_file = tk.StringVar()
-
-    load_config(v.default_config_file)
-
-    v.root.after(5, first_file_check())
 
     v.root.mainloop()
 
