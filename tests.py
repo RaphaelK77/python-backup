@@ -59,5 +59,23 @@ class OpenApplication(TKinterTestCase):
         self.pump_events()
 
 
+class ConfigurationWindowTest(TKinterTestCase):
+    def test_cancel_description_change(self):
+        self.main_page.manage_config_button.invoke()
+        config_widget = self.main_page.guest
+        config_widget.description_buttons["config"].invoke()
+        description_window = config_widget.description_window
+        description_window.cancel_button.invoke()
+        self.pump_events()
+
+    def test_confirm_description_change(self):
+        self.main_page.manage_config_button.invoke()
+        config_widget = self.main_page.guest
+        config_widget.description_buttons["config"].invoke()
+        description_window = config_widget.description_window
+        description_window.confirm_button.invoke()
+        self.pump_events()
+
+
 if __name__ == '__main__':
     unittest.main()
