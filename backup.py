@@ -353,8 +353,9 @@ def get_path_for_config(config_name):
 
 
 class ConfigDescriptionWindow:
-    def __init__(self, master, config, caller, conf_window):
+    def __init__(self, master, main_page, config, caller, conf_window):
         self.master = master
+        self.main_page = main_page
         self.config = config
         self.caller = caller
         self.conf_window = conf_window
@@ -385,14 +386,14 @@ class ConfigDescriptionWindow:
         logger.info("Changed description of config '{}'".format(self.config))
         load_config(v.loaded_config_filename, check_remaining=False)
         self.frame.destroy()
-        ConfigWindow(self.master, "Description successfully changed.", "green2")
+        ConfigWindow(self.master, self.main_page, "Description successfully changed.", "green2")
 
     def close_description(self):
         if read_description_from_config(self.config) != self.text_entry.get(1.0, "end-1c"):
             if not tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to discard these changes?"):
                 return
         self.frame.destroy()
-        ConfigWindow(self.master)
+        ConfigWindow(self.master, self.main_page)
 
 
 class ConfigWindow:
@@ -426,6 +427,7 @@ class ConfigWindow:
         config_file_list = get_config_files()
         config_list = [cfg_file[0:-4] for cfg_file in config_file_list]
 
+        self.description_buttons = {}
         for config in config_list:
             name_label = ttk.Label(self.frame, text=config, anchor="center")
             name_label.grid(column=0, row=self.next_row, sticky="NSEW")
@@ -437,8 +439,8 @@ class ConfigWindow:
             load_button.grid(column=3, row=self.next_row, sticky="NSEW")
             delete_button = ttk.Button(self.frame, text="delete", command=lambda c=config: self.delete_config(c), style="danger.TButton")
             delete_button.grid(column=4, row=self.next_row, sticky="NSEW")
-            description_button = ttk.Button(self.frame, text="description", command=lambda c=config: self.open_config_description_window(c), style="info.TButton", width=10)
-            description_button.grid(column=5, row=self.next_row, sticky="NSEW")
+            self.description_buttons[config] = ttk.Button(self.frame, text="description", command=lambda c=config: self.open_config_description_window(c), style="info.TButton", width=10)
+            self.description_buttons[config].grid(column=5, row=self.next_row, sticky="NSEW")
 
             if config == "config":
                 delete_button["state"] = "disabled"
@@ -468,6 +470,7 @@ class ConfigWindow:
         self.frame.rowconfigure(row_list, weight=1)
 
         self.message = None
+        self.description_window = None
 
         if update_message is not None and update_color is not None:
             self.show_message(update_message, update_color)
@@ -532,7 +535,7 @@ class ConfigWindow:
 
     def open_config_description_window(self, config):
         self.config_frame.destroy()
-        ConfigDescriptionWindow(self.master, config, self.master, self)
+        self.description_window = ConfigDescriptionWindow(self.master, self.main_page, config, self.master, self)
 
 
 def select_directory(field):
