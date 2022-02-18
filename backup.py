@@ -42,6 +42,7 @@ dst_list = []
 
 main_page = None
 
+
 def load_config(config_file="config.ini", new_file=False, check_remaining=True):
     global src_list
     global dst_list
@@ -352,8 +353,78 @@ def get_path_for_config(config_name):
     return v.config_dir + "\\" + config_name
 
 
+class MainPage:
+    def __init__(self, master):
+        self.master = master
+
+        self.frame = tk.Frame(self.master, padx=30, pady=5)
+        self.guest_frame = tk.Frame(self.master, padx=30, pady=5)
+        self.frame.pack(fill="both", side=tk.LEFT, expand=True)
+        self.guest_frame.pack(fill="both", side=tk.RIGHT, expand=True)
+
+        self.config_file = ttk.Entry(self.frame, textvariable=v.loaded_config_file)
+        self.config_file.pack(fill="both", expand=True, padx=20, pady=20)
+        # make entry read only
+        self.config_file.bind("<Key>", lambda e: "break")
+
+        self.manage_config_button = ttk.Button(self.frame, text="Manage Configurations", command=self.open_config_page)
+        self.manage_config_button.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.folders_button = ttk.Button(self.frame, text="Folders", command=self.open_folder_page)
+        self.folders_button.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.interval_button = ttk.Button(self.frame, text="Set Update Interval", command=self.open_interval_page)
+        self.interval_button.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.sync_button = ttk.Button(self.frame, text="Synchronize Now", command=self.start_sync, style="success.TButton")
+        self.sync_button.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.close = ttk.Button(self.frame, text="Quit", command=self.master.destroy, style="danger.TButton")
+        self.close.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.remaining = ttk.Entry(self.frame, textvariable=v.remaining_files)
+        self.remaining.pack(fill="both", expand=True, padx=20, pady=20)
+        self.remaining.bind("<Key>", lambda e: "break")
+
+        self.current_file = ttk.Entry(self.frame, textvariable=v.current_file)
+        self.current_file.pack(fill="both", expand=True, padx=20, pady=20)
+        self.current_file.bind("<Key>", lambda e: txt_event(e))
+
+        self.guest = None
+
+    def start_sync(self):
+        buttons = [self.manage_config_button, self.folders_button, self.interval_button, self.sync_button]
+        self.clear_guest_frame()
+        self.resize()
+        for button in buttons:
+            button["state"] = tk.DISABLED
+        start_sync()
+        for button in buttons:
+            button["state"] = tk.ACTIVE
+
+    def clear_guest_frame(self):
+        for widget in self.guest_frame.winfo_children():
+            widget.destroy()
+
+    def open_interval_page(self):
+        self.clear_guest_frame()
+        self.guest = IntervalWindow(self.guest_frame, main_page=self)
+
+    def open_folder_page(self):
+        self.clear_guest_frame()
+        self.guest = FolderWindow(self.guest_frame, main_page=self)
+
+    def open_config_page(self):
+        self.clear_guest_frame()
+        self.guest = ConfigWindow(master=self.guest_frame, main_page=self)
+
+    def resize(self):
+        self.frame.config(width=250)
+        self.guest_frame.config(width=100)
+
+
 class ConfigDescriptionWindow:
-    def __init__(self, master, main_page, config, caller, conf_window):
+    def __init__(self, master, main_page: MainPage, config, caller, conf_window):
         self.master = master
         self.main_page = main_page
         self.config = config
@@ -386,18 +457,18 @@ class ConfigDescriptionWindow:
         logger.info("Changed description of config '{}'".format(self.config))
         load_config(v.loaded_config_filename, check_remaining=False)
         self.frame.destroy()
-        ConfigWindow(self.master, self.main_page, "Description successfully changed.", "green2")
+        ConfigWindow(master=self.master, main_page=self.main_page, update_message="Description successfully changed.", update_description="green2")
 
     def close_description(self):
         if read_description_from_config(self.config) != self.text_entry.get(1.0, "end-1c"):
             if not tkinter.messagebox.askyesno(title="Confirmation", message="Are you sure you want to discard these changes?"):
                 return
         self.frame.destroy()
-        ConfigWindow(self.master, self.main_page)
+        ConfigWindow(master=self.master, main_page=self.main_page)
 
 
 class ConfigWindow:
-    def __init__(self, master, main_page, update_message=None, update_color=None):
+    def __init__(self, master, main_page: MainPage, update_message=None, update_color=None):
         self.master = master
         self.main_page = main_page
 
@@ -531,11 +602,11 @@ class ConfigWindow:
 
     def reload(self, update_message=None, update_color=None):
         self.config_frame.destroy()
-        ConfigWindow(self.master, update_message, update_color)
+        ConfigWindow(master=self.master, main_page=self.main_page, update_message=update_message, update_color=update_color)
 
     def open_config_description_window(self, config):
         self.config_frame.destroy()
-        self.description_window = ConfigDescriptionWindow(self.master, self.main_page, config, self.master, self)
+        self.description_window = ConfigDescriptionWindow(self.master, main_page=self.main_page, config=config, caller=self.master, conf_window=self)
 
 
 def select_directory(field):
@@ -753,76 +824,6 @@ class IntervalWindow:
         self.message = tk.Label(self.interval_frame, text="Interval changed successfully.")
         self.message.pack(side=tk.TOP, fill=tk.X)
         self.message.config(bg="green2")
-
-
-class MainPage:
-    def __init__(self, master):
-        self.master = master
-
-        self.frame = tk.Frame(self.master, padx=30, pady=5)
-        self.guest_frame = tk.Frame(self.master, padx=30, pady=5)
-        self.frame.pack(fill="both", side=tk.LEFT, expand=True)
-        self.guest_frame.pack(fill="both", side=tk.RIGHT, expand=True)
-
-        self.config_file = ttk.Entry(self.frame, textvariable=v.loaded_config_file)
-        self.config_file.pack(fill="both", expand=True, padx=20, pady=20)
-        # make entry read only
-        self.config_file.bind("<Key>", lambda e: "break")
-
-        self.manage_config_button = ttk.Button(self.frame, text="Manage Configurations", command=self.open_config_page)
-        self.manage_config_button.pack(fill="both", expand=True, padx=20, pady=20)
-
-        self.folders_button = ttk.Button(self.frame, text="Folders", command=self.open_folder_page)
-        self.folders_button.pack(fill="both", expand=True, padx=20, pady=20)
-
-        self.interval_button = ttk.Button(self.frame, text="Set Update Interval", command=self.open_interval_page)
-        self.interval_button.pack(fill="both", expand=True, padx=20, pady=20)
-
-        self.sync_button = ttk.Button(self.frame, text="Synchronize Now", command=self.start_sync, style="success.TButton")
-        self.sync_button.pack(fill="both", expand=True, padx=20, pady=20)
-
-        self.close = ttk.Button(self.frame, text="Quit", command=self.master.destroy, style="danger.TButton")
-        self.close.pack(fill="both", expand=True, padx=20, pady=20)
-
-        self.remaining = ttk.Entry(self.frame, textvariable=v.remaining_files)
-        self.remaining.pack(fill="both", expand=True, padx=20, pady=20)
-        self.remaining.bind("<Key>", lambda e: "break")
-
-        self.current_file = ttk.Entry(self.frame, textvariable=v.current_file)
-        self.current_file.pack(fill="both", expand=True, padx=20, pady=20)
-        self.current_file.bind("<Key>", lambda e: txt_event(e))
-
-        self.guest = None
-
-    def start_sync(self):
-        buttons = [self.manage_config_button, self.folders_button, self.interval_button, self.sync_button]
-        self.clear_guest_frame()
-        self.resize()
-        for button in buttons:
-            button["state"] = tk.DISABLED
-        start_sync()
-        for button in buttons:
-            button["state"] = tk.ACTIVE
-
-    def clear_guest_frame(self):
-        for widget in self.guest_frame.winfo_children():
-            widget.destroy()
-
-    def open_interval_page(self):
-        self.clear_guest_frame()
-        self.guest = IntervalWindow(self.guest_frame, main_page=self)
-
-    def open_folder_page(self):
-        self.clear_guest_frame()
-        self.guest = FolderWindow(self.guest_frame, main_page=self)
-
-    def open_config_page(self):
-        self.clear_guest_frame()
-        self.guest = ConfigWindow(self.guest_frame, main_page=self)
-
-    def resize(self):
-        self.frame.config(width=250)
-        self.guest_frame.config(width=100)
 
 
 def initialize():
