@@ -1,3 +1,4 @@
+import _tkinter
 import configparser
 import logging
 import math
@@ -189,6 +190,8 @@ def transfer_file(source, target):
             logger.error(source + " cannot be copied: " + str(e))
             return "Synchronization failed: {}\n".format(e)
         transfer_file(source, target)
+    except PermissionError:
+        v.illegal_paths.append(target)
 
 
 def sync_file(source, target):
@@ -283,6 +286,7 @@ def sync():
 
     error_messages = ""
 
+    # sync every source and destination folder in src_list and dst_list
     for src, dst in zip(src_list, dst_list):
         logger.info("Now syncing {} and {}".format(src, dst))
         ret_val = sync_dir(src, dst, start)
@@ -332,7 +336,11 @@ def get_config_files():
 
 def start_sync():
     v.changed = 0
-    sync()
+    try:
+        sync()
+    except _tkinter.TclError:
+        logger.info("Program quit by user during synchronization.")
+        exit(0)
 
 
 def txt_event(event):
@@ -499,6 +507,7 @@ class ConfigWindow:
         config_list = [cfg_file[0:-4] for cfg_file in config_file_list]
 
         self.description_buttons = {}
+        self.delete_buttons = {}  # TODO
         for config in config_list:
             name_label = ttk.Label(self.frame, text=config, anchor="center")
             name_label.grid(column=0, row=self.next_row, sticky="NSEW")
@@ -542,9 +551,13 @@ class ConfigWindow:
 
         self.message = None
         self.description_window = None
+        self.confirm_button = None
 
         if update_message is not None and update_color is not None:
             self.show_message(update_message, update_color)
+
+    def exists(self):
+        return self.config_frame.winfo_exists()
 
     def close(self):
         self.config_frame.destroy()
@@ -583,8 +596,8 @@ class ConfigWindow:
 
         self.new_name_entry.grid(column=0, row=self.next_row, sticky="NSEW")
 
-        confirm_button = ttk.Button(self.frame, text="Confirm", command=self.create_config)
-        confirm_button.grid(column=1, row=self.next_row, sticky="NSEW")
+        self.confirm_button = ttk.Button(self.frame, text="Confirm", command=self.create_config)
+        self.confirm_button.grid(column=1, row=self.next_row, sticky="NSEW")
         self.next_row += 1
 
         self.close_button = ttk.Button(self.frame, text="Close", command=self.config_frame.destroy)

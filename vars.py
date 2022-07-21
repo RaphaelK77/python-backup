@@ -30,7 +30,7 @@ git_link = "https://api.github.com/repos/RaphaelK77/python-backup/releases/lates
 
 
 def find_documents():
-    """ find documents folder """
+    """ find Windows documents folder """
     global working_dir
     global config_dir
     dll = ctypes.windll.shell32
