@@ -1,3 +1,4 @@
+import _tkinter
 import logging
 from datetime import date
 from datetime import datetime
@@ -14,7 +15,7 @@ import vars as v
 v.find_documents()
 
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
-                    handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
+                    handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding="utf-8", delay=False)])
 logger = logging.getLogger("autorun")
 logger.setLevel(logging.INFO)
 
@@ -64,7 +65,11 @@ def auto_sync():
 
         if should_current_config_be_synced():
             backup.check_remaining_files()
-            backup.sync()
+            try:
+                backup.sync()
+            except _tkinter.TclError:
+                logger.info("Program quit by user during synchronization.")
+                exit(0)
             logger.info("Done synchronizing config {}".format(v.loaded_config_filename))
             v.loaded_config["PARAMETERS"]["last_run"] = str(date.today())
             backup.write_config()

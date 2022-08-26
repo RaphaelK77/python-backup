@@ -30,7 +30,7 @@ if not os.path.isdir(v.config_dir):
 
 # config logging
 logging.basicConfig(format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
-                    handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding=None, delay=False)])
+                    handlers=[RotatingFileHandler(filename=v.working_dir + "\\" + 'backup.log', mode="a", maxBytes=1024 * 1024, backupCount=1, encoding="utf-8", delay=False)])
 if __name__ != "__main__":
     logger = logging.getLogger(__name__)
 else:
@@ -859,18 +859,19 @@ def initialize():
             os.remove(file)
             logger.info("Deleted {}".format(file))
 
-    style = ttks.Style(theme="cosmo")
-    v.root = style.master
-    v.root.title("Backup " + v.current_version)
-    v.root.geometry(v.main_geometry)
+    if __name__ == "__main__":
+        style = ttks.Style(theme="cosmo")
+        v.root = style.master
+        v.root.title("Backup " + v.current_version)
+        v.root.geometry(v.main_geometry)
 
-    v.remaining_files = tk.StringVar()
-    v.current_file = tk.StringVar()
-    v.loaded_config_file = tk.StringVar()
+        v.remaining_files = tk.StringVar()
+        v.current_file = tk.StringVar()
+        v.loaded_config_file = tk.StringVar()
 
-    load_config(v.default_config_file)
+        load_config(v.default_config_file)
 
-    v.root.after(5, first_file_check(v.root))
+        v.root.after(5, first_file_check(v.root))
 
     return v.root
 
