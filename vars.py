@@ -18,7 +18,7 @@ loaded_config = None
 loaded_config_file = None
 loaded_config_filename = ""
 short_config_desc_len = 30
-current_version = "v1.5.3"
+current_version = "v1.5.3.2"
 remaining_time = -1
 time_update_timer = 0
 
