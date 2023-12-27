@@ -288,7 +288,15 @@ def sync():
 
     # sync every source and destination folder in src_list and dst_list
     for src, dst in zip(src_list, dst_list):
-        logger.info("Now syncing {} and {}".format(src, dst))
+        try:
+            logger.info("Now syncing {} and {}".format(src, dst))
+        except UnicodeEncodeError:
+            error_m = "The folder '{}' contains an illegal character and was skipped.".format(src.encode("ascii", "replace").decode("utf-8"))
+            logger.warning(error_m)
+            error_messages += error_m
+            v.illegal_paths.append(src.encode("ascii", "replace").decode("utf-8"))
+            continue
+
         ret_val = sync_dir(src, dst, start)
         if ret_val is not None:
             error_messages += ret_val
@@ -941,6 +949,8 @@ def check_for_updates():
 
 if __name__ == '__main__':
     logger.info("********** STARTING BACKUP ************")
+
+    print(f"Test: {(chr(2560) + u'abc').encode('ascii', 'replace').decode('utf-8')}")
 
     initialize()
 
