@@ -310,10 +310,14 @@ def sync():
         if v.illegal_paths:
             error_messages += "{} files were ignored due to their path length.\nA log of these files was created in {}\n".format(
                 len(v.illegal_paths), illegal_path_file)
+            # clear after dumping to log file
+            v.illegal_paths = []
 
         if v.forbidden_paths:
             error_messages += "{} files were ignored due to restricted access.\nA log of these files was created in {}\n".format(
                 len(v.forbidden_paths), forbidden_path_file)
+            # clear after dumping to log file
+            v.forbidden_paths = []
 
         if error_messages == "":
             tkinter.messagebox.showinfo(title="Success", message="Synchronisation complete. Copied {} file(s).".format(
