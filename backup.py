@@ -305,7 +305,13 @@ def sync():
     illegal_path_file = v.working_dir + r"\illegal_paths.txt"
     illegal_path_file_handler = open(illegal_path_file, "a")
     for illegal_path in v.illegal_paths:
-        illegal_path_file_handler.write(illegal_path + "\n")
+        try:
+            illegal_path_file_handler.write(illegal_path + "\n")
+        except UnicodeEncodeError:
+            error_m = "The folder '{}' contains an illegal character and was skipped.".format(illegal_path.encode("ascii", "replace").decode("utf-8"))
+            logger.warning(error_m)
+            error_messages += error_m
+            v.illegal_paths.append(illegal_path.encode("ascii", "replace").decode("utf-8"))
     illegal_path_file_handler.close()
 
     forbidden_path_file = v.working_dir + r"\forbidden_paths.txt"
